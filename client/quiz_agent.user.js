@@ -24,11 +24,12 @@
       QUESTION: '.question-text, .quiz-question, #questionTitle, .question-content',
       OPTION_CONTAINER: '.answers-list, .options-group, .choices',
       OPTION_ITEM: '.option-item, .answer-choice, label.radio, .answer-item',
-      SUBMIT_BUTTON: '#btnSubmit, .btn-submit, .btn-next, button[type="submit"]',
+      NEXT_BUTTON: '#btnNext, .btn-next',
+      SUBMIT_BUTTON: '#btnSubmit, .btn-submit, .btn-submit-exam, button[type="submit"]',
     },
-    AUTO_SUBMIT: false,
-    AUTO_SUBMIT_DELAY_MS: 1500,
-    POLL_INTERVAL_MS: 1200,
+    AUTO_PROCEED: true,
+    AUTO_PROCEED_DELAY_MS: 1600,
+    POLL_INTERVAL_MS: 1000,
   };
 
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -227,13 +228,19 @@
         await dispatchHumanClick(matchedOpt.domElement);
         lastProcessedQuestion = quiz.question;
 
-        // Auto submit nếu bật cấu hình
-        if (CONFIG.AUTO_SUBMIT) {
-          await sleep(CONFIG.AUTO_SUBMIT_DELAY_MS);
-          const submitBtn = document.querySelector(CONFIG.SELECTORS.SUBMIT_BUTTON);
-          if (submitBtn) {
-            console.info('[QA-Agent] Kích hoạt nút xác nhận đáp án...');
-            await dispatchHumanClick(submitBtn);
+        // Tự động chuyển câu hoặc nộp bài sau khi chọn phương án
+        if (CONFIG.AUTO_PROCEED) {
+          await sleep(CONFIG.AUTO_PROCEED_DELAY_MS);
+          const nextBtn = document.querySelector(CONFIG.SELECTORS.NEXT_BUTTON);
+          if (nextBtn && window.getComputedStyle(nextBtn).display !== 'none' && !nextBtn.disabled) {
+            console.info('[QA-Agent] Tự động chuyển sang câu tiếp theo...');
+            await dispatchHumanClick(nextBtn);
+          } else {
+            const submitBtn = document.querySelector(CONFIG.SELECTORS.SUBMIT_BUTTON);
+            if (submitBtn && window.getComputedStyle(submitBtn).display !== 'none') {
+              console.info('[QA-Agent] Đã hoàn thành câu cuối cùng. Tự động nộp bài thi...');
+              await dispatchHumanClick(submitBtn);
+            }
           }
         }
       } else {

@@ -65,37 +65,82 @@ class LLMReasoningEngine:
         """
         clean_context = context_text.lower()
         best_key = options[0]["key"] if options else "A"
-        best_score = -1.0
+        best_score = -999.0
         best_fact = ""
 
-        # Trích xuất số liệu / tỷ lệ phần trăm trong context
-        context_numbers = set(re.findall(r"\b\d+(?:[\.,]\d+)?%?", clean_context))
+        # Trích xuất riêng phần trăm và số thông thường
+        context_percentages = set(re.findall(r"\b\d+(?:[\.,]\d+)?%", clean_context))
+        context_numbers = set(re.findall(r"\b\d+\b", clean_context)) - {"2024", "2025", "2026", "2030"} # Loại trừ năm phổ biến
 
         for opt in options:
             opt_key = opt.get("key", "A")
             opt_text = opt.get("text", "")
             opt_lower = opt_text.lower()
             
-            # 1. So khớp số liệu cụ thể (VD: 80%, 100%, 2026)
-            opt_numbers = set(re.findall(r"\b\d+(?:[\.,]\d+)?%?", opt_lower))
-            common_numbers = opt_numbers.intersection(context_numbers)
+            # Phân tích số liệu trong option
+            opt_percentages = set(re.findall(r"\b\d+(?:[\.,]\d+)?%", opt_lower))
+            common_pct = opt_percentages.intersection(context_percentages)
+            missing_pct = opt_percentages - context_percentages
 
-            # 2. So khớp từ vựng
-            words = [w for w in re.findall(r"\w+", opt_lower) if len(w) > 2]
+            opt_numbers = set(re.findall(r"\b\d+\b", opt_lower)) - {"2024", "2025", "2026", "2030"}
+            common_nums = opt_numbers.intersection(context_numbers)
+
+            # Đếm số từ đơn trùng khớp (tối thiểu 2 ký tự: hồ, xã, sở, bộ...)
+            words = [w for w in re.findall(r"\w+", opt_lower) if len(w) >= 2]
             word_matches = sum(1 for w in words if w in clean_context)
-            word_ratio = (word_matches / max(1, len(words)))
+            word_ratio = word_matches / max(1, len(words))
 
-            # Điểm số kết hợp (ưu tiên rất cao cho số liệu chính xác)
-            score = (len(common_numbers) * 3.0) + word_ratio
+            # Tính điểm cụm từ liên tiếp (2-grams và 3-grams)
+            opt_words = opt_lower.split()
+            bi_grams = [" ".join(opt_words[i:i+2]) for i in range(len(opt_words)-1)]
+            tri_grams = [" ".join(opt_words[i:i+3]) for i in range(len(opt_words)-2)]
+
+            bi_matches = sum(1 for bg in bi_grams if bg in clean_context)
+            tri_matches = sum(1 for tg in tri_grams if tg in clean_context)
+
+            # 4. Proximity & Anchor Window Matching:
+            q_anchors = re.findall(r"\((.*?)\)", question.lower()) + re.findall(r"['\"](.*?)['\"]", question.lower())
+            is_who_question = any(q_word in question.lower() for q_word in ["ai là", "người ký", "ai có", "chữ ký"])
+            if is_who_question:
+                q_anchors.extend(["kt. chủ tịch", "kt chủ tịch", "ký thay", "chữ ký"])
+
+            anchor_bonus = 0.0
+            for anchor in q_anchors:
+                anchor_idx = clean_context.find(anchor)
+                if anchor_idx != -1:
+                    # Lấy cửa sổ văn bản 160 ký tự quanh anchor
+                    start_w = max(0, anchor_idx - 40)
+                    end_w = min(len(clean_context), anchor_idx + 180)
+                    window_text = clean_context[start_w:end_w]
+                    
+                    # Tỷ lệ từ của option nằm ngay trong cửa sổ anchor
+                    w_matches = sum(1 for w in words if w in window_text)
+                    w_ratio = w_matches / max(1, len(words))
+                    if w_ratio > 0.4:
+                        anchor_bonus = max(anchor_bonus, w_ratio * 30.0)
+
+            # Tính điểm trọng số tổng hợp
+            score = (
+                (tri_matches * 4.0) +
+                (bi_matches * 2.0) +
+                (word_matches * 1.0) +
+                (word_ratio * 3.0) +
+                (len(common_pct) * 6.0) +
+                (len(common_nums) * 3.0) +
+                anchor_bonus -
+                (len(missing_pct) * 8.0)
+            )
 
             if score > best_score:
                 best_score = score
                 best_key = opt_key
-                best_fact = f"Khớp từ vựng ({word_matches}/{len(words)})"
-                if common_numbers:
-                    best_fact += f", trùng số liệu: {', '.join(common_numbers)}"
+                best_fact = f"Khớp {tri_matches} cụm-3, {bi_matches} cụm-2, {word_matches}/{len(words)} từ ({word_ratio:.0%})"
+                if anchor_bonus > 0:
+                    best_fact += f" [Anchor Proximity Bonus: {anchor_bonus:.1f}]"
+                if common_pct:
+                    best_fact += f", khớp tỷ lệ: {', '.join(common_pct)}"
 
-        confidence = 0.65 if best_score > 0 else 0.40
+        confidence = 0.80 if best_score > 5.0 else (0.60 if best_score > 0 else 0.40)
         return best_key, confidence, best_fact or "Heuristic fallback match."
 
     def solve(self, question: str, options: List[dict], context_text: str) -> Tuple[str, float, str]:

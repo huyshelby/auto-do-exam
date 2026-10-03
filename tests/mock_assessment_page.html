@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hệ thống Khảo sát & Đánh giá Cải cách Hành chính 2026</title>
+  <title>Kỳ Thi Đánh Giá Kiến Thức Cải Cách Hành Chính Năm 2026</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -12,17 +12,14 @@
       --bg: #090d16;
       --card-bg: rgba(22, 30, 49, 0.75);
       --card-border: rgba(255, 255, 255, 0.08);
-      --card-hover-border: rgba(59, 130, 246, 0.4);
       --primary: #3b82f6;
       --primary-glow: rgba(59, 130, 246, 0.25);
       --text: #f8fafc;
       --text-muted: #94a3b8;
       --success: #10b981;
       --success-glow: rgba(16, 185, 129, 0.25);
-      --success-border: #059669;
       --danger: #ef4444;
       --danger-glow: rgba(239, 68, 68, 0.2);
-      --danger-border: #dc2626;
       --warning: #f59e0b;
       --accent: #8b5cf6;
     }
@@ -37,19 +34,19 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 32px 20px;
+      padding: 24px 20px;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Header Bar */
+    /* Top Navigation */
     .top-nav {
       width: 100%;
-      max-width: 1060px;
+      max-width: 1100px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 24px;
-      padding: 14px 20px;
+      margin-bottom: 20px;
+      padding: 12px 20px;
       background: rgba(15, 23, 42, 0.6);
       backdrop-filter: blur(12px);
       border: 1px solid var(--card-border);
@@ -62,7 +59,6 @@
       gap: 10px;
       font-weight: 700;
       font-size: 15px;
-      letter-spacing: -0.01em;
     }
 
     .brand-icon {
@@ -72,7 +68,7 @@
       border-radius: 8px;
       display: grid;
       place-items: center;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 800;
     }
 
@@ -94,8 +90,8 @@
 
     .toggle-switch {
       position: relative;
-      width: 40px;
-      height: 22px;
+      width: 38px;
+      height: 20px;
       background: #334155;
       border-radius: 999px;
       transition: 0.3s;
@@ -105,56 +101,94 @@
     .toggle-switch::after {
       content: '';
       position: absolute;
-      width: 16px;
-      height: 16px;
+      width: 14px;
+      height: 14px;
       border-radius: 50%;
       background: white;
       top: 3px;
       left: 3px;
-      transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: 0.3s;
     }
 
-    input:checked + .toggle-switch {
-      background: var(--success);
-    }
-
-    input:checked + .toggle-switch::after {
-      transform: translateX(18px);
-    }
+    input:checked + .toggle-switch { background: var(--success); }
+    input:checked + .toggle-switch::after { transform: translateX(18px); }
 
     /* Main Container */
     .container {
       width: 100%;
-      max-width: 1060px;
+      max-width: 1100px;
       display: grid;
       grid-template-columns: 1fr 340px;
       gap: 24px;
       align-items: start;
     }
 
+    /* Question Navigator Bar */
+    .nav-pagination {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .page-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: all 0.2s;
+    }
+
+    .page-btn:hover {
+      border-color: var(--primary);
+      color: var(--text);
+    }
+
+    .page-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+      box-shadow: 0 4px 12px var(--primary-glow);
+    }
+
+    .page-btn.answered {
+      border-color: var(--success);
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.1);
+    }
+
+    /* Quiz Card */
     .quiz-card {
       background: var(--card-bg);
       backdrop-filter: blur(16px);
       border: 1px solid var(--card-border);
       border-radius: 18px;
-      padding: 30px;
+      padding: 28px;
       box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
       position: relative;
-      overflow: hidden;
     }
 
     .quiz-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding-bottom: 16px;
+      padding-bottom: 14px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      margin-bottom: 22px;
+      margin-bottom: 20px;
     }
 
     .badges {
       display: flex;
       gap: 8px;
+      align-items: center;
     }
 
     .badge {
@@ -162,7 +196,6 @@
       border-radius: 9999px;
       font-size: 12px;
       font-weight: 700;
-      letter-spacing: 0.02em;
     }
 
     .badge-primary {
@@ -171,27 +204,10 @@
       border: 1px solid rgba(59, 130, 246, 0.3);
     }
 
-    .badge-live {
-      background: rgba(16, 185, 129, 0.15);
-      color: #34d399;
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .pulse-dot {
-      width: 6px;
-      height: 6px;
-      background: #10b981;
-      border-radius: 50%;
-      animation: pulse 1.8s infinite;
-    }
-
-    @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-      70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    .badge-doc {
+      background: rgba(139, 92, 246, 0.15);
+      color: #c4b5fd;
+      border: 1px solid rgba(139, 92, 246, 0.3);
     }
 
     .timer-text {
@@ -201,15 +217,14 @@
     }
 
     .question-title {
-      font-size: 19px;
+      font-size: 18px;
       line-height: 1.6;
       font-weight: 700;
-      margin-bottom: 24px;
+      margin-bottom: 22px;
       color: #ffffff;
-      letter-spacing: -0.01em;
     }
 
-    /* Options Styling */
+    /* Options */
     .options-group {
       display: flex;
       flex-direction: column;
@@ -219,14 +234,14 @@
     .option-item {
       display: flex;
       align-items: flex-start;
-      padding: 16px 20px;
+      padding: 15px 18px;
       background: rgba(15, 23, 42, 0.7);
       border: 1.5px solid rgba(255, 255, 255, 0.08);
       border-radius: 12px;
       cursor: pointer;
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
       user-select: none;
+      position: relative;
     }
 
     .option-item:hover {
@@ -241,7 +256,6 @@
       box-shadow: 0 0 0 1px var(--primary), 0 8px 20px -6px var(--primary-glow);
     }
 
-    /* Visual Highlighting for Correct & Incorrect Answers */
     .option-item.is-correct {
       border-color: var(--success) !important;
       background: linear-gradient(90deg, rgba(6, 78, 59, 0.45) 0%, rgba(15, 23, 42, 0.8) 100%) !important;
@@ -269,12 +283,6 @@
       margin-right: 14px;
       flex-shrink: 0;
       margin-top: 1px;
-      transition: all 0.2s;
-    }
-
-    .option-item:hover .option-indicator {
-      border-color: var(--primary);
-      color: var(--primary);
     }
 
     .option-item.selected .option-indicator {
@@ -309,12 +317,6 @@
       font-weight: 500;
     }
 
-    .option-item.is-correct .option-label {
-      color: #ffffff;
-      font-weight: 600;
-    }
-
-    /* Verification Badges inside Option */
     .status-badge {
       display: none;
       align-items: center;
@@ -325,7 +327,6 @@
       border-radius: 999px;
       margin-left: auto;
       flex-shrink: 0;
-      animation: fadeInBadge 0.3s ease;
     }
 
     .option-item.is-correct .status-badge.badge-correct {
@@ -342,28 +343,21 @@
       border: 1px solid rgba(239, 68, 68, 0.4);
     }
 
-    @keyframes fadeInBadge {
-      from { opacity: 0; transform: scale(0.85); }
-      to { opacity: 1; transform: scale(1); }
-    }
-
-    /* Explanation & Legal Citation Card */
+    /* Explanation Card */
     .explanation-card {
-      margin-top: 24px;
+      margin-top: 22px;
       background: rgba(15, 23, 42, 0.85);
       border: 1px solid rgba(16, 185, 129, 0.3);
       border-radius: 14px;
-      padding: 20px;
+      padding: 18px;
       display: none;
-      animation: slideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .explanation-card.visible {
-      display: block;
-    }
+    .explanation-card.visible { display: block; }
 
     @keyframes slideDown {
-      from { opacity: 0; transform: translateY(-10px); }
+      from { opacity: 0; transform: translateY(-8px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
@@ -371,11 +365,11 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
     .explanation-title {
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 700;
       color: #34d399;
       display: flex;
@@ -384,7 +378,7 @@
     }
 
     .citation-source {
-      font-size: 12px;
+      font-size: 11.5px;
       font-family: 'JetBrains Mono', monospace;
       color: var(--text-muted);
       background: rgba(255, 255, 255, 0.05);
@@ -397,35 +391,23 @@
       line-height: 1.6;
       color: #cbd5e1;
       border-left: 3px solid #10b981;
-      padding-left: 14px;
-      margin: 10px 0;
+      padding: 8px 12px;
+      margin: 8px 0;
       background: rgba(16, 185, 129, 0.05);
-      padding-top: 8px;
-      padding-bottom: 8px;
       border-radius: 0 8px 8px 0;
     }
 
     .citation-meta {
       display: flex;
       gap: 16px;
-      margin-top: 12px;
-      padding-top: 10px;
+      margin-top: 10px;
+      padding-top: 8px;
       border-top: 1px solid rgba(255, 255, 255, 0.06);
-      font-size: 12px;
+      font-size: 11.5px;
       color: var(--text-muted);
     }
 
-    .meta-tag {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .meta-tag strong {
-      color: #f1f5f9;
-    }
-
-    /* Actions Bar */
+    /* Actions */
     .actions {
       margin-top: 24px;
       display: flex;
@@ -434,10 +416,10 @@
     }
 
     .btn {
-      padding: 11px 22px;
+      padding: 11px 20px;
       border-radius: 10px;
       font-weight: 600;
-      font-size: 14px;
+      font-size: 13.5px;
       cursor: pointer;
       border: none;
       transition: all 0.2s;
@@ -452,9 +434,14 @@
       border: 1px solid var(--card-border);
     }
 
-    .btn-secondary:hover {
+    .btn-secondary:hover:not(:disabled) {
       background: rgba(255, 255, 255, 0.1);
       color: #fff;
+    }
+
+    .btn-secondary:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
     }
 
     .btn-primary {
@@ -468,16 +455,27 @@
       transform: translateY(-1px);
     }
 
+    .btn-submit-exam {
+      background: linear-gradient(135deg, #059669, #10b981);
+      color: white;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-submit-exam:hover {
+      background: linear-gradient(135deg, #10b981, #34d399);
+      transform: translateY(-1px);
+    }
+
     /* Telemetry Sidebar */
     .telemetry-card {
       background: var(--card-bg);
       backdrop-filter: blur(16px);
       border: 1px solid var(--card-border);
       border-radius: 18px;
-      padding: 22px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
-      height: 560px;
+      height: 590px;
       box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
     }
 
@@ -487,7 +485,7 @@
       text-transform: uppercase;
       letter-spacing: 0.06em;
       color: var(--text-muted);
-      margin-bottom: 14px;
+      margin-bottom: 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -529,28 +527,62 @@
       background: rgba(16, 185, 129, 0.08);
     }
 
-    .log-item.event-down {
-      border-left-color: var(--warning);
-    }
-
-    .log-item.event-rag {
+    .log-item.event-nav {
       border-left-color: var(--accent);
       background: rgba(139, 92, 246, 0.1);
       color: #c4b5fd;
+    }
+
+    /* Score Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      display: none;
+      place-items: center;
+      z-index: 1000;
+    }
+
+    .modal-overlay.active { display: grid; }
+
+    .modal-content {
+      background: #111827;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      border-radius: 20px;
+      padding: 32px;
+      max-width: 480px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 40px rgba(16, 185, 129, 0.2);
+    }
+
+    .score-circle {
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      background: rgba(16, 185, 129, 0.15);
+      border: 2px solid var(--success);
+      margin: 0 auto 16px;
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+      font-weight: 800;
+      color: #34d399;
     }
   </style>
 </head>
 <body>
 
-  <!-- Top Navigation & Mode Switcher -->
+  <!-- Top Navigation -->
   <div class="top-nav">
     <div class="brand">
       <div class="brand-icon">QA</div>
-      <span>Hệ thống Khảo sát Cải cách Hành chính 2026</span>
+      <span>Hệ Thống Đánh Giá CCHC Năm 2026</span>
     </div>
 
     <div class="controls-group">
-      <label class="toggle-label" title="Tự động làm nổi bật đáp án chính xác và căn cứ khi chọn">
+      <label class="toggle-label" title="Tự động hiển thị đáp án đúng sau khi chọn">
         <input type="checkbox" id="toggleReveal" checked style="display:none;">
         <span class="toggle-switch"></span>
         <span>Trực quan hóa đáp án đúng</span>
@@ -562,95 +594,72 @@
   </div>
 
   <div class="container">
-    <!-- KHUNG BÀI THI -->
-    <div class="quiz-card">
-      <div class="quiz-header">
-        <div class="badges">
-          <span class="badge badge-primary">Câu 1 / 1</span>
-          <span class="badge badge-live">
-            <span class="pulse-dot"></span>
-            Agent Active
-          </span>
-        </div>
-        <span class="timer-text">Thời gian: 14:38</span>
+    <div class="main-column">
+      <!-- Question Navigator Bar -->
+      <div class="nav-pagination" id="paginationBar">
+        <!-- Rendered by JS: [1] [2] [3] [4] [5] -->
       </div>
 
-      <div class="question-text question-title" id="questionTitle">
-        Theo Kế hoạch số 244/KH-UBND ngày 07/8/2026 của UBND xã Đại Lộc, mục tiêu chung của công tác tuyên truyền cải cách hành chính (CCHC) là gì?
-      </div>
-
-      <div class="options-group answers-list">
-        <!-- ĐÁP ÁN ĐÚNG: A -->
-        <label class="option-item" data-key="A" data-is-correct="true">
-          <input type="radio" name="quiz_opt" class="option-radio" value="A" style="display: none;">
-          <div class="option-indicator">A</div>
-          <div class="option-content-wrapper">
-            <span class="option-label">Nâng cao nhận thức, trách nhiệm của cán bộ, công chức và sự đồng thuận của người dân, tổ chức, xã hội</span>
+      <!-- Quiz Card -->
+      <div class="quiz-card">
+        <div class="quiz-header">
+          <div class="badges">
+            <span class="badge badge-primary" id="questionNumberBadge">Câu 1 / 5</span>
+            <span class="badge badge-doc" id="docSourceBadge">1963/QĐ-UBND</span>
           </div>
-          <span class="status-badge badge-correct">✓ ĐÁP ÁN ĐÚNG</span>
-        </label>
-
-        <!-- ĐÁP ÁN B -->
-        <label class="option-item" data-key="B">
-          <input type="radio" name="quiz_opt" class="option-radio" value="B" style="display: none;">
-          <div class="option-indicator">B</div>
-          <div class="option-content-wrapper">
-            <span class="option-label">Giảm 50% số lượng công chức làm việc tại bộ phận Một cửa trong năm 2026</span>
-          </div>
-          <span class="status-badge badge-wrong">✗ Chưa chính xác</span>
-        </label>
-
-        <!-- ĐÁP ÁN C -->
-        <label class="option-item" data-key="C">
-          <input type="radio" name="quiz_opt" class="option-radio" value="C" style="display: none;">
-          <div class="option-indicator">C</div>
-          <div class="option-content-wrapper">
-            <span class="option-label">Chuyển giao toàn bộ quyền giải quyết thủ tục hành chính cho doanh nghiệp tư nhân</span>
-          </div>
-          <span class="status-badge badge-wrong">✗ Chưa chính xác</span>
-        </label>
-
-        <!-- ĐÁP ÁN D -->
-        <label class="option-item" data-key="D">
-          <input type="radio" name="quiz_opt" class="option-radio" value="D" style="display: none;">
-          <div class="option-indicator">D</div>
-          <div class="option-content-wrapper">
-            <span class="option-label">Dừng hoàn toàn việc tuyên truyền trên hệ thống thông tin cơ sở và đài truyền thanh</span>
-          </div>
-          <span class="status-badge badge-wrong">✗ Chưa chính xác</span>
-        </label>
-      </div>
-
-      <!-- CARD TRÍCH XUẤT CĂN CỨ PHÁP LÝ (LEGAL CITATION) -->
-      <div class="explanation-card" id="explanationCard">
-        <div class="explanation-header">
-          <div class="explanation-title">
-            <span>⚖️ Căn cứ pháp lý & Ngữ cảnh trích xuất (RAG Match)</span>
-          </div>
-          <span class="citation-source">244/KH-UBND > Mục I.1.a</span>
+          <span class="timer-text">Thời gian làm bài: 14:10</span>
         </div>
 
-        <div class="citation-quote">
-          “Tăng cường công tác thông tin, tuyên truyền nhằm nâng cao nhận thức, trách nhiệm tổ chức thực hiện cải cách hành chính (sau đây viết tắt là CCHC) của cán bộ quản lý, cán bộ, công chức, viên chức xã trong quá trình thực thi công vụ, nhiệm vụ. Đồng thời, nâng cao nhận thức, sự đồng thuận của người dân, tổ chức, xã hội về việc thực hiện các mục tiêu, nhiệm vụ CCHC nhà nước.”
+        <div class="question-text question-title" id="questionTitle">
+          <!-- Nội dung câu hỏi -->
         </div>
 
-        <div class="citation-meta">
-          <div class="meta-tag">Độ tin cậy: <strong>98.5% (High)</strong></div>
-          <div class="meta-tag">Phương pháp: <strong>In-memory BM25 + Qwen2.5</strong></div>
-          <div class="meta-tag">Thời gian tra cứu: <strong>0.18ms</strong></div>
+        <div class="options-group answers-list" id="optionsGroup">
+          <!-- Các phương án trả lời -->
         </div>
-      </div>
 
-      <div class="actions">
-        <button class="btn btn-secondary" id="btnReset">Đặt lại lựa chọn</button>
-        <button class="btn btn-primary" id="btnSubmit">
-          <span>Xác nhận đáp án</span>
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </button>
+        <!-- Thẻ Căn Cứ Pháp Lý & Ngữ Cảnh RAG -->
+        <div class="explanation-card" id="explanationCard">
+          <div class="explanation-header">
+            <div class="explanation-title">
+              <span>⚖️ Căn cứ pháp lý & Ngữ cảnh trích xuất (RAG Match)</span>
+            </div>
+            <span class="citation-source" id="citationSource">244/KH-UBND</span>
+          </div>
+
+          <div class="citation-quote" id="citationQuote">
+            <!-- Đoạn trích dẫn -->
+          </div>
+
+          <div class="citation-meta">
+            <div class="meta-tag">Độ tin cậy: <strong id="citationConf">98.5% (High)</strong></div>
+            <div class="meta-tag">Truy xuất: <strong id="citationMethod">In-memory BM25</strong></div>
+            <div class="meta-tag">Độ trễ: <strong id="citationLatency">0.18ms</strong></div>
+          </div>
+        </div>
+
+        <!-- Nút điều hướng câu hỏi -->
+        <div class="actions">
+          <button class="btn btn-secondary" id="btnPrev" disabled>
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            <span>Câu trước</span>
+          </button>
+
+          <div style="display: flex; gap: 10px;">
+            <button class="btn btn-primary" id="btnNext">
+              <span>Câu tiếp theo</span>
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+            <button class="btn btn-submit-exam" id="btnSubmit" style="display: none;">
+              <span>Nộp bài thi</span>
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- KHUNG TELEMETRY / BEHAVIORAL ANALYTICS SIMULATOR -->
+    <!-- Telemetry Sidebar -->
     <div class="telemetry-card">
       <div class="telemetry-title">
         <span>Behavioral Telemetry</span>
@@ -662,17 +671,204 @@
     </div>
   </div>
 
+  <!-- Score Modal -->
+  <div class="modal-overlay" id="scoreModal">
+    <div class="modal-content">
+      <div class="score-circle" id="scoreValue">5/5</div>
+      <h2 style="margin-bottom: 8px; color: #fff;">Hoàn Thành Bài Thi Xuất Sắc!</h2>
+      <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 24px;" id="scoreSummary">
+        Hệ thống QA Agent đã tự động suy luận chính xác 5/5 câu hỏi từ tài liệu tham chiếu 1963/QĐ-UBND và 244/KH-UBND.
+      </p>
+      <button class="btn btn-primary" id="btnRestartQuiz" style="margin: 0 auto;">Làm lại bài thi</button>
+    </div>
+  </div>
+
   <script>
-    const logContainer = document.getElementById('telemetryLog');
-    const eventCountEl = document.getElementById('eventCount');
+    // BỘ ĐỀ THI 5 CÂU HỎI TRÍCH XUẤT TỪ 2 VĂN BẢN QUY PHẠM THỰC TẾ
+    const QUIZ_DATA = [
+      {
+        id: "q1",
+        docSource: "1963/QĐ-UBND (Đà Nẵng)",
+        question: "Theo Quyết định số 1963/QĐ-UBND ngày 06/5/2026 của UBND thành phố Đà Nẵng, ai là người ký thay Chủ tịch (KT. Chủ tịch)?",
+        correctKey: "A",
+        options: [
+          { key: "A", text: "Phó Chủ tịch Hồ Quang Bửu" },
+          { key: "B", text: "Giám đốc Sở Nội vụ thành phố" },
+          { key: "C", text: "Chánh Văn phòng UBND thành phố" },
+          { key: "D", text: "Chủ tịch Hội đồng nhân dân thành phố" }
+        ],
+        citation: {
+          source: "1963/QĐ-UBND > Trang 2 > Nơi nhận",
+          quote: "KT. CHỦ TỊCH / PHÓ CHỦ TỊCH / [Chữ ký và con dấu đỏ của UBND thành phố Đà Nẵng] / Hồ Quang Bửu."
+        }
+      },
+      {
+        id: "q2",
+        docSource: "1963/QĐ-UBND (Đà Nẵng)",
+        question: "Theo Kế hoạch số 1963/QĐ-UBND, công tác thông tin, tuyên truyền CCHC năm 2026 phải quán triệt nguyên tắc lấy đối tượng nào làm 'trung tâm, chủ thể, mục tiêu và động lực của CCHC'?",
+        correctKey: "B",
+        options: [
+          { key: "A", text: "Doanh nghiệp nhà nước và cơ quan báo chí địa phương" },
+          { key: "B", text: "Người dân, doanh nghiệp" },
+          { key: "C", text: "Đội ngũ cán bộ quản lý cấp thành phố" },
+          { key: "D", text: "Các tổ chức tài chính và nhà đầu tư nước ngoài" }
+        ],
+        citation: {
+          source: "1963/QĐ-UBND > Kế hoạch > Mục I.2.a",
+          quote: "Công tác thông tin, tuyên truyền CCHC phải quán triệt nguyên tắc 'lấy người dân, doanh nghiệp làm trung tâm, chủ thể, mục tiêu và động lực của CCHC', gắn với nâng cao chất lượng cung ứng dịch vụ công..."
+        }
+      },
+      {
+        id: "q3",
+        docSource: "244/KH-UBND (Đại Lộc)",
+        question: "Theo Kế hoạch số 244/KH-UBND ngày 07/8/2026 của UBND xã Đại Lộc, công tác tuyên truyền CCHC được đưa vào hoạt động thường xuyên trên kênh thông tin nào?",
+        correctKey: "A",
+        options: [
+          { key: "A", text: "Trang Thông tin Đại Lộc" },
+          { key: "B", text: "Kênh truyền hình VTV1 Quốc gia" },
+          { key: "C", text: "Tạp chí Nghiên cứu Lập pháp" },
+          { key: "D", text: "Bản tin nội bộ của Bộ Nội vụ" }
+        ],
+        citation: {
+          source: "244/KH-UBND > Mục I.1.a",
+          quote: "...đưa tuyên truyền CCHC vào hoạt động thường xuyên trên Trang Thông tin Đại Lộc. Qua đó, góp phần giúp người dân, doanh nghiệp dễ tiếp cận thông tin..."
+        }
+      },
+      {
+        id: "q4",
+        docSource: "1963/QĐ-UBND (Đà Nẵng)",
+        question: "Theo Kế hoạch kèm Quyết định số 1963/QĐ-UBND, yêu cầu đối với các cơ quan, đơn vị về việc sản xuất video clip tuyên truyền CCHC trong năm là gì?",
+        correctKey: "A",
+        options: [
+          { key: "A", text: "100% các đơn vị thực hiện ít nhất 01 video clip truyền tải thông điệp về CCHC trong năm" },
+          { key: "B", text: "Mỗi quý phát hành ít nhất 05 video phóng sự chuyên sâu" },
+          { key: "C", text: "Chỉ có Đài Phát thanh - Truyền hình Đà Nẵng chịu trách nhiệm làm video clip" },
+          { key: "D", text: "Không bắt buộc sản xuất video clip, chỉ đăng bài viết trên mạng xã hội" }
+        ],
+        citation: {
+          source: "1963/QĐ-UBND > Mục III.2.a",
+          quote: "100% các đơn vị thực hiện ít nhất 01 video clip truyền tải thông điệp về CCHC trong năm."
+        }
+      },
+      {
+        id: "q5",
+        docSource: "244/KH-UBND (Đại Lộc)",
+        question: "Mục tiêu chung của Kế hoạch số 244/KH-UBND ngày 07/8/2026 trên địa bàn xã Đại Lộc nhằm nâng cao nhận thức và sự đồng thuận của ai?",
+        correctKey: "A",
+        options: [
+          { key: "A", text: "Cán bộ quản lý, cán bộ, công chức, viên chức xã và người dân, tổ chức, xã hội" },
+          { key: "B", text: "Cắt giảm 50% số lượng cán bộ cấp xã trong năm 2026" },
+          { key: "C", text: "Dừng toàn bộ việc tiếp nhận và xử lý thủ tục hành chính trực tiếp" },
+          { key: "D", text: "Xóa bỏ hoàn toàn hệ thống loa truyền thanh cơ sở" }
+        ],
+        citation: {
+          source: "244/KH-UBND > Mục I.1.a",
+          quote: "Tăng cường công tác thông tin, tuyên truyền nhằm nâng cao nhận thức, trách nhiệm tổ chức thực hiện CCHC của cán bộ quản lý, cán bộ, công chức, viên chức xã... Đồng thời, nâng cao nhận thức, sự đồng thuận của người dân, tổ chức, xã hội..."
+        }
+      }
+    ];
+
+    // State
+    let currentIndex = 0;
+    const userAnswers = {}; // { 0: "A", 1: "B", ... }
+    let count = 0;
+
+    // Elements
+    const paginationBar = document.getElementById('paginationBar');
+    const questionNumberBadge = document.getElementById('questionNumberBadge');
+    const docSourceBadge = document.getElementById('docSourceBadge');
+    const questionTitle = document.getElementById('questionTitle');
+    const optionsGroup = document.getElementById('optionsGroup');
     const explanationCard = document.getElementById('explanationCard');
+    const citationSource = document.getElementById('citationSource');
+    const citationQuote = document.getElementById('citationQuote');
+    const citationConf = document.getElementById('citationConf');
+    const citationMethod = document.getElementById('citationMethod');
+    const citationLatency = document.getElementById('citationLatency');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const btnSubmit = document.getElementById('btnSubmit');
     const toggleReveal = document.getElementById('toggleReveal');
     const btnRevealNow = document.getElementById('btnRevealNow');
-    const btnReset = document.getElementById('btnReset');
-    const btnSubmit = document.getElementById('btnSubmit');
+    const logContainer = document.getElementById('telemetryLog');
+    const eventCountEl = document.getElementById('eventCount');
+    const scoreModal = document.getElementById('scoreModal');
+    const scoreValue = document.getElementById('scoreValue');
+    const scoreSummary = document.getElementById('scoreSummary');
+    const btnRestartQuiz = document.getElementById('btnRestartQuiz');
 
-    let count = 0;
-    const trackedEvents = ['pointerover', 'mouseover', 'pointermove', 'pointerdown', 'mousedown', 'focus', 'pointerup', 'mouseup', 'click', 'change'];
+    // Khởi tạo Pagination Pills
+    function renderPagination() {
+      paginationBar.innerHTML = '';
+      QUIZ_DATA.forEach((q, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'page-btn' + (idx === currentIndex ? ' active' : '') + (userAnswers[idx] ? ' answered' : '');
+        btn.innerText = idx + 1;
+        btn.addEventListener('click', () => {
+          currentIndex = idx;
+          renderQuestion();
+        });
+        paginationBar.appendChild(btn);
+      });
+    }
+
+    // Hiển thị câu hỏi hiện tại
+    function renderQuestion() {
+      const q = QUIZ_DATA[currentIndex];
+      questionNumberBadge.innerText = `Câu ${currentIndex + 1} / ${QUIZ_DATA.length}`;
+      docSourceBadge.innerText = q.docSource;
+      questionTitle.innerText = q.question;
+
+      // Render Options
+      optionsGroup.innerHTML = '';
+      q.options.forEach(opt => {
+        const item = document.createElement('label');
+        item.className = 'option-item';
+        item.setAttribute('data-key', opt.key);
+        if (opt.key === q.correctKey) {
+          item.setAttribute('data-is-correct', 'true');
+        }
+
+        const isSelected = userAnswers[currentIndex] === opt.key;
+        if (isSelected) item.classList.add('selected');
+
+        item.innerHTML = `
+          <input type="radio" name="quiz_opt_${currentIndex}" class="option-radio" value="${opt.key}" ${isSelected ? 'checked' : ''} style="display:none;">
+          <div class="option-indicator">${opt.key}</div>
+          <div class="option-content-wrapper">
+            <span class="option-label">${opt.text}</span>
+          </div>
+          <span class="status-badge badge-correct">✓ ĐÁP ÁN ĐÚNG</span>
+          <span class="status-badge badge-wrong">✗ Chưa chính xác</span>
+        `;
+        optionsGroup.appendChild(item);
+      });
+
+      // Update Citation
+      citationSource.innerText = q.citation.source;
+      citationQuote.innerText = `“${q.citation.quote}”`;
+
+      // Check if already answered
+      if (userAnswers[currentIndex] && toggleReveal.checked) {
+        const selectedOpt = optionsGroup.querySelector(`.option-item[data-key="${userAnswers[currentIndex]}"]`);
+        revealAnswers(selectedOpt);
+      } else {
+        explanationCard.classList.remove('visible');
+      }
+
+      // Update Buttons
+      btnPrev.disabled = currentIndex === 0;
+      if (currentIndex === QUIZ_DATA.length - 1) {
+        btnNext.style.display = 'none';
+        btnSubmit.style.display = 'inline-flex';
+      } else {
+        btnNext.style.display = 'inline-flex';
+        btnSubmit.style.display = 'none';
+      }
+
+      renderPagination();
+      appendTelemetryLog('NAV_QUESTION', `Câu ${currentIndex + 1}`, `ID: ${q.id}`, 'event-nav');
+    }
 
     function appendTelemetryLog(type, targetDesc, extra = '', cssClass = '') {
       count++;
@@ -687,27 +883,10 @@
       logContainer.scrollTop = logContainer.scrollHeight;
     }
 
-    // Xử lý sự kiện giao diện
-    function recordEvent(e) {
-      const optionItem = e.target.closest('.option-item');
-      if (!optionItem && e.target.id !== 'btnSubmit') return;
-
-      const targetDesc = optionItem ? optionItem.getAttribute('data-key') : e.target.id;
-      const isTrustedStr = e.isTrusted ? 'trusted' : 'synthetic';
-      const coords = (e.clientX !== undefined) ? `(${Math.round(e.clientX)},${Math.round(e.clientY)})` : '';
-      
-      let cssClass = '';
-      if (e.type === 'click') cssClass = 'event-click';
-      if (e.type.includes('down')) cssClass = 'event-down';
-
-      appendTelemetryLog(e.type, targetDesc, `${coords} [${isTrustedStr}]`, cssClass);
-
-      if (e.type === 'click' && optionItem) {
-        selectOption(optionItem);
-      }
-    }
-
     function selectOption(optionItem) {
+      const key = optionItem.getAttribute('data-key');
+      userAnswers[currentIndex] = key;
+
       document.querySelectorAll('.option-item').forEach(el => {
         el.classList.remove('selected', 'is-correct', 'is-incorrect');
       });
@@ -716,58 +895,97 @@
       const radio = optionItem.querySelector('input[type="radio"]');
       if (radio) radio.checked = true;
 
+      renderPagination();
+
       if (toggleReveal.checked) {
         revealAnswers(optionItem);
       }
     }
 
     function revealAnswers(selectedEl) {
+      const q = QUIZ_DATA[currentIndex];
       document.querySelectorAll('.option-item').forEach(el => {
-        const isCorrect = el.getAttribute('data-is-correct') === 'true';
-        if (isCorrect) {
+        const key = el.getAttribute('data-key');
+        if (key === q.correctKey) {
           el.classList.add('is-correct');
         } else if (selectedEl && el === selectedEl) {
           el.classList.add('is-incorrect');
         }
       });
 
-      // Hiển thị Card trích xuất căn cứ pháp lý
       explanationCard.classList.add('visible');
-      appendTelemetryLog('RAG_EXPLAIN', 'Citation', 'Khớp Điều mục: 244/KH-UBND (Conf: 98.5%)', 'event-rag');
     }
 
-    function resetSelection() {
-      document.querySelectorAll('.option-item').forEach(el => {
-        el.classList.remove('selected', 'is-correct', 'is-incorrect');
-        const r = el.querySelector('input[type="radio"]');
-        if (r) r.checked = false;
-      });
-      explanationCard.classList.remove('visible');
-      appendTelemetryLog('RESET', 'Quiz', 'Đặt lại trạng thái ban đầu');
-    }
+    // Telemetry Event Listener
+    const trackedEvents = ['pointerover', 'mouseover', 'pointermove', 'pointerdown', 'mousedown', 'focus', 'pointerup', 'mouseup', 'click', 'change'];
 
-    btnRevealNow.addEventListener('click', () => {
-      revealAnswers(document.querySelector('.option-item.selected'));
-    });
+    function handleEvent(e) {
+      const optionItem = e.target.closest('.option-item');
+      const isNavBtn = e.target.closest('#btnNext, #btnPrev, #btnSubmit');
 
-    btnReset.addEventListener('click', resetSelection);
+      if (!optionItem && !isNavBtn) return;
 
-    btnSubmit.addEventListener('click', () => {
-      const selected = document.querySelector('.option-item.selected');
-      if (!selected) {
-        alert('Vui lòng chọn một phương án trước khi xác nhận.');
-        return;
+      const targetDesc = optionItem ? optionItem.getAttribute('data-key') : (e.target.id || e.target.innerText?.trim());
+      const isTrustedStr = e.isTrusted ? 'trusted' : 'synthetic';
+      const coords = (e.clientX !== undefined) ? `(${Math.round(e.clientX)},${Math.round(e.clientY)})` : '';
+      
+      let cssClass = '';
+      if (e.type === 'click') cssClass = 'event-click';
+
+      appendTelemetryLog(e.type, targetDesc, `${coords} [${isTrustedStr}]`, cssClass);
+
+      if (e.type === 'click' && optionItem) {
+        selectOption(optionItem);
       }
-      revealAnswers(selected);
-      appendTelemetryLog('SUBMIT', selected.getAttribute('data-key'), 'Đã xác nhận bài thi', 'event-click');
-    });
+    }
 
     trackedEvents.forEach(evt => {
-      document.addEventListener(evt, recordEvent, true);
+      document.addEventListener(evt, handleEvent, true);
     });
+
+    btnNext.addEventListener('click', () => {
+      if (currentIndex < QUIZ_DATA.length - 1) {
+        currentIndex++;
+        renderQuestion();
+      }
+    });
+
+    btnPrev.addEventListener('click', () => {
+      if (currentIndex > 0) {
+        currentIndex--;
+        renderQuestion();
+      }
+    });
+
+    btnRevealNow.addEventListener('click', () => {
+      const selected = optionsGroup.querySelector('.option-item.selected');
+      revealAnswers(selected);
+    });
+
+    btnSubmit.addEventListener('click', () => {
+      let correctCount = 0;
+      QUIZ_DATA.forEach((q, idx) => {
+        if (userAnswers[idx] === q.correctKey) correctCount++;
+      });
+
+      scoreValue.innerText = `${correctCount}/${QUIZ_DATA.length}`;
+      scoreSummary.innerText = `Agent đã hoàn thành toàn bộ bài thi trắc nghiệm CCHC! Số câu đúng: ${correctCount}/${QUIZ_DATA.length} (Đạt ${(correctCount/QUIZ_DATA.length*100).toFixed(0)}%).`;
+      scoreModal.classList.add('active');
+      appendTelemetryLog('SUBMIT_EXAM', 'FinalScore', `${correctCount}/${QUIZ_DATA.length}`, 'event-click');
+    });
+
+    btnRestartQuiz.addEventListener('click', () => {
+      scoreModal.classList.remove('active');
+      for (const k in userAnswers) delete userAnswers[k];
+      currentIndex = 0;
+      renderQuestion();
+    });
+
+    // Khởi chạy câu đầu tiên
+    renderQuestion();
   </script>
 
-  <!-- Nạp Userscript tự động giải đề & mô phỏng thao tác -->
+  <!-- Userscript tự động duyệt và giải bài thi -->
   <script src="../client/quiz_agent.user.js"></script>
 </body>
 </html>
