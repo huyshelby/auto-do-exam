@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hệ thống Khảo sát & Đánh giá Cải cách Hành chính 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(22, 30, 49, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-hover-border: rgba(59, 130, 246, 0.4);
+      --primary: #3b82f6;
+      --primary-glow: rgba(59, 130, 246, 0.25);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.25);
+      --success-border: #059669;
+      --danger: #ef4444;
+      --danger-glow: rgba(239, 68, 68, 0.2);
+      --danger-border: #dc2626;
+      --warning: #f59e0b;
+      --accent: #8b5cf6;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #090d16 65%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 20px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Header Bar */
+    .top-nav {
+      width: 100%;
+      max-width: 1060px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding: 14px 20px;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: -0.01em;
+    }
+
+    .brand-icon {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .controls-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 40px;
+      height: 22px;
+      background: #334155;
+      border-radius: 999px;
+      transition: 0.3s;
+      display: inline-block;
+    }
+
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: white;
+      top: 3px;
+      left: 3px;
+      transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    input:checked + .toggle-switch {
+      background: var(--success);
+    }
+
+    input:checked + .toggle-switch::after {
+      transform: translateX(18px);
+    }
+
+    /* Main Container */
+    .container {
+      width: 100%;
+      max-width: 1060px;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .quiz-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 30px;
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .quiz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      margin-bottom: 22px;
+    }
+
+    .badges {
+      display: flex;
+      gap: 8px;
+    }
+
+    .badge {
+      padding: 5px 12px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .badge-primary {
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .badge-live {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      background: #10b981;
+      border-radius: 50%;
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    .timer-text {
+      font-size: 13px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+    }
+
+    .question-title {
+      font-size: 19px;
+      line-height: 1.6;
+      font-weight: 700;
+      margin-bottom: 24px;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+
+    /* Options Styling */
+    .options-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .option-item {
+      display: flex;
+      align-items: flex-start;
+      padding: 16px 20px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1.5px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      user-select: none;
+    }
+
+    .option-item:hover {
+      border-color: rgba(59, 130, 246, 0.5);
+      background: rgba(30, 41, 59, 0.8);
+      transform: translateY(-1px);
+    }
+
+    .option-item.selected {
+      border-color: var(--primary);
+      background: rgba(30, 58, 138, 0.35);
+      box-shadow: 0 0 0 1px var(--primary), 0 8px 20px -6px var(--primary-glow);
+    }
+
+    /* Visual Highlighting for Correct & Incorrect Answers */
+    .option-item.is-correct {
+      border-color: var(--success) !important;
+      background: linear-gradient(90deg, rgba(6, 78, 59, 0.45) 0%, rgba(15, 23, 42, 0.8) 100%) !important;
+      box-shadow: 0 0 0 2px var(--success), 0 10px 25px -5px var(--success-glow) !important;
+      transform: translateY(-2px);
+    }
+
+    .option-item.is-incorrect {
+      border-color: var(--danger) !important;
+      background: linear-gradient(90deg, rgba(127, 29, 29, 0.4) 0%, rgba(15, 23, 42, 0.8) 100%) !important;
+      box-shadow: 0 0 0 1px var(--danger), 0 8px 20px -6px var(--danger-glow) !important;
+      opacity: 0.85;
+    }
+
+    .option-indicator {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      border: 1.5px solid rgba(255, 255, 255, 0.2);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-right: 14px;
+      flex-shrink: 0;
+      margin-top: 1px;
+      transition: all 0.2s;
+    }
+
+    .option-item:hover .option-indicator {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .option-item.selected .option-indicator {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    .option-item.is-correct .option-indicator {
+      background: var(--success);
+      border-color: var(--success);
+      color: white;
+    }
+
+    .option-item.is-incorrect .option-indicator {
+      background: var(--danger);
+      border-color: var(--danger);
+      color: white;
+    }
+
+    .option-content-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .option-label {
+      font-size: 15px;
+      line-height: 1.5;
+      color: #e2e8f0;
+      font-weight: 500;
+    }
+
+    .option-item.is-correct .option-label {
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    /* Verification Badges inside Option */
+    .status-badge {
+      display: none;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 999px;
+      margin-left: auto;
+      flex-shrink: 0;
+      animation: fadeInBadge 0.3s ease;
+    }
+
+    .option-item.is-correct .status-badge.badge-correct {
+      display: inline-flex;
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+
+    .option-item.is-incorrect .status-badge.badge-wrong {
+      display: inline-flex;
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+
+    @keyframes fadeInBadge {
+      from { opacity: 0; transform: scale(0.85); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* Explanation & Legal Citation Card */
+    .explanation-card {
+      margin-top: 24px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 14px;
+      padding: 20px;
+      display: none;
+      animation: slideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .explanation-card.visible {
+      display: block;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .explanation-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .explanation-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #34d399;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .citation-source {
+      font-size: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .citation-quote {
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: #cbd5e1;
+      border-left: 3px solid #10b981;
+      padding-left: 14px;
+      margin: 10px 0;
+      background: rgba(16, 185, 129, 0.05);
+      padding-top: 8px;
+      padding-bottom: 8px;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .citation-meta {
+      display: flex;
+      gap: 16px;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .meta-tag {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .meta-tag strong {
+      color: #f1f5f9;
+    }
+
+    /* Actions Bar */
+    .actions {
+      margin-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn {
+      padding: 11px 22px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.06);
+      color: #cbd5e1;
+      border: 1px solid var(--card-border);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: white;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      transform: translateY(-1px);
+    }
+
+    /* Telemetry Sidebar */
+    .telemetry-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      height: 560px;
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+    }
+
+    .telemetry-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .telemetry-counter {
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+    }
+
+    .telemetry-log {
+      flex: 1;
+      background: #060910;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .log-item {
+      padding: 5px 8px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.03);
+      border-left: 3px solid var(--primary);
+      line-height: 1.4;
+    }
+
+    .log-item.event-click {
+      border-left-color: var(--success);
+      background: rgba(16, 185, 129, 0.08);
+    }
+
+    .log-item.event-down {
+      border-left-color: var(--warning);
+    }
+
+    .log-item.event-rag {
+      border-left-color: var(--accent);
+      background: rgba(139, 92, 246, 0.1);
+      color: #c4b5fd;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation & Mode Switcher -->
+  <div class="top-nav">
+    <div class="brand">
+      <div class="brand-icon">QA</div>
+      <span>Hệ thống Khảo sát Cải cách Hành chính 2026</span>
+    </div>
+
+    <div class="controls-group">
+      <label class="toggle-label" title="Tự động làm nổi bật đáp án chính xác và căn cứ khi chọn">
+        <input type="checkbox" id="toggleReveal" checked style="display:none;">
+        <span class="toggle-switch"></span>
+        <span>Trực quan hóa đáp án đúng</span>
+      </label>
+      <button class="btn btn-secondary" id="btnRevealNow" style="padding: 6px 14px; font-size: 12px;">
+        👁️ Xem đáp án
+      </button>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- KHUNG BÀI THI -->
+    <div class="quiz-card">
+      <div class="quiz-header">
+        <div class="badges">
+          <span class="badge badge-primary">Câu 1 / 1</span>
+          <span class="badge badge-live">
+            <span class="pulse-dot"></span>
+            Agent Active
+          </span>
+        </div>
+        <span class="timer-text">Thời gian: 14:38</span>
+      </div>
+
+      <div class="question-text question-title" id="questionTitle">
+        Theo Kế hoạch số 244/KH-UBND ngày 07/8/2026 của UBND xã Đại Lộc, mục tiêu chung của công tác tuyên truyền cải cách hành chính (CCHC) là gì?
+      </div>
+
+      <div class="options-group answers-list">
+        <!-- ĐÁP ÁN ĐÚNG: A -->
+        <label class="option-item" data-key="A" data-is-correct="true">
+          <input type="radio" name="quiz_opt" class="option-radio" value="A" style="display: none;">
+          <div class="option-indicator">A</div>
+          <div class="option-content-wrapper">
+            <span class="option-label">Nâng cao nhận thức, trách nhiệm của cán bộ, công chức và sự đồng thuận của người dân, tổ chức, xã hội</span>
+          </div>
+          <span class="status-badge badge-correct">✓ ĐÁP ÁN ĐÚNG</span>
+        </label>
+
+        <!-- ĐÁP ÁN B -->
+        <label class="option-item" data-key="B">
+          <input type="radio" name="quiz_opt" class="option-radio" value="B" style="display: none;">
+          <div class="option-indicator">B</div>
+          <div class="option-content-wrapper">
+            <span class="option-label">Giảm 50% số lượng công chức làm việc tại bộ phận Một cửa trong năm 2026</span>
+          </div>
+          <span class="status-badge badge-wrong">✗ Chưa chính xác</span>
+        </label>
+
+        <!-- ĐÁP ÁN C -->
+        <label class="option-item" data-key="C">
+          <input type="radio" name="quiz_opt" class="option-radio" value="C" style="display: none;">
+          <div class="option-indicator">C</div>
+          <div class="option-content-wrapper">
+            <span class="option-label">Chuyển giao toàn bộ quyền giải quyết thủ tục hành chính cho doanh nghiệp tư nhân</span>
+          </div>
+          <span class="status-badge badge-wrong">✗ Chưa chính xác</span>
+        </label>
+
+        <!-- ĐÁP ÁN D -->
+        <label class="option-item" data-key="D">
+          <input type="radio" name="quiz_opt" class="option-radio" value="D" style="display: none;">
+          <div class="option-indicator">D</div>
+          <div class="option-content-wrapper">
+            <span class="option-label">Dừng hoàn toàn việc tuyên truyền trên hệ thống thông tin cơ sở và đài truyền thanh</span>
+          </div>
+          <span class="status-badge badge-wrong">✗ Chưa chính xác</span>
+        </label>
+      </div>
+
+      <!-- CARD TRÍCH XUẤT CĂN CỨ PHÁP LÝ (LEGAL CITATION) -->
+      <div class="explanation-card" id="explanationCard">
+        <div class="explanation-header">
+          <div class="explanation-title">
+            <span>⚖️ Căn cứ pháp lý & Ngữ cảnh trích xuất (RAG Match)</span>
+          </div>
+          <span class="citation-source">244/KH-UBND > Mục I.1.a</span>
+        </div>
+
+        <div class="citation-quote">
+          “Tăng cường công tác thông tin, tuyên truyền nhằm nâng cao nhận thức, trách nhiệm tổ chức thực hiện cải cách hành chính (sau đây viết tắt là CCHC) của cán bộ quản lý, cán bộ, công chức, viên chức xã trong quá trình thực thi công vụ, nhiệm vụ. Đồng thời, nâng cao nhận thức, sự đồng thuận của người dân, tổ chức, xã hội về việc thực hiện các mục tiêu, nhiệm vụ CCHC nhà nước.”
+        </div>
+
+        <div class="citation-meta">
+          <div class="meta-tag">Độ tin cậy: <strong>98.5% (High)</strong></div>
+          <div class="meta-tag">Phương pháp: <strong>In-memory BM25 + Qwen2.5</strong></div>
+          <div class="meta-tag">Thời gian tra cứu: <strong>0.18ms</strong></div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-secondary" id="btnReset">Đặt lại lựa chọn</button>
+        <button class="btn btn-primary" id="btnSubmit">
+          <span>Xác nhận đáp án</span>
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- KHUNG TELEMETRY / BEHAVIORAL ANALYTICS SIMULATOR -->
+    <div class="telemetry-card">
+      <div class="telemetry-title">
+        <span>Behavioral Telemetry</span>
+        <span class="telemetry-counter" id="eventCount">0 sự kiện</span>
+      </div>
+      <div class="telemetry-log" id="telemetryLog">
+        <div style="color: var(--text-muted);">Đang theo dõi chuỗi sự kiện người dùng & Agent...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const logContainer = document.getElementById('telemetryLog');
+    const eventCountEl = document.getElementById('eventCount');
+    const explanationCard = document.getElementById('explanationCard');
+    const toggleReveal = document.getElementById('toggleReveal');
+    const btnRevealNow = document.getElementById('btnRevealNow');
+    const btnReset = document.getElementById('btnReset');
+    const btnSubmit = document.getElementById('btnSubmit');
+
+    let count = 0;
+    const trackedEvents = ['pointerover', 'mouseover', 'pointermove', 'pointerdown', 'mousedown', 'focus', 'pointerup', 'mouseup', 'click', 'change'];
+
+    function appendTelemetryLog(type, targetDesc, extra = '', cssClass = '') {
+      count++;
+      eventCountEl.innerText = count + ' sự kiện';
+
+      const logItem = document.createElement('div');
+      logItem.className = 'log-item ' + cssClass;
+      const timeStr = new Date().toLocaleTimeString();
+      logItem.innerText = `[${timeStr}] ${type.padEnd(11)} -> [${targetDesc}] ${extra}`;
+
+      logContainer.appendChild(logItem);
+      logContainer.scrollTop = logContainer.scrollHeight;
+    }
+
+    // Xử lý sự kiện giao diện
+    function recordEvent(e) {
+      const optionItem = e.target.closest('.option-item');
+      if (!optionItem && e.target.id !== 'btnSubmit') return;
+
+      const targetDesc = optionItem ? optionItem.getAttribute('data-key') : e.target.id;
+      const isTrustedStr = e.isTrusted ? 'trusted' : 'synthetic';
+      const coords = (e.clientX !== undefined) ? `(${Math.round(e.clientX)},${Math.round(e.clientY)})` : '';
+      
+      let cssClass = '';
+      if (e.type === 'click') cssClass = 'event-click';
+      if (e.type.includes('down')) cssClass = 'event-down';
+
+      appendTelemetryLog(e.type, targetDesc, `${coords} [${isTrustedStr}]`, cssClass);
+
+      if (e.type === 'click' && optionItem) {
+        selectOption(optionItem);
+      }
+    }
+
+    function selectOption(optionItem) {
+      document.querySelectorAll('.option-item').forEach(el => {
+        el.classList.remove('selected', 'is-correct', 'is-incorrect');
+      });
+
+      optionItem.classList.add('selected');
+      const radio = optionItem.querySelector('input[type="radio"]');
+      if (radio) radio.checked = true;
+
+      if (toggleReveal.checked) {
+        revealAnswers(optionItem);
+      }
+    }
+
+    function revealAnswers(selectedEl) {
+      document.querySelectorAll('.option-item').forEach(el => {
+        const isCorrect = el.getAttribute('data-is-correct') === 'true';
+        if (isCorrect) {
+          el.classList.add('is-correct');
+        } else if (selectedEl && el === selectedEl) {
+          el.classList.add('is-incorrect');
+        }
+      });
+
+      // Hiển thị Card trích xuất căn cứ pháp lý
+      explanationCard.classList.add('visible');
+      appendTelemetryLog('RAG_EXPLAIN', 'Citation', 'Khớp Điều mục: 244/KH-UBND (Conf: 98.5%)', 'event-rag');
+    }
+
+    function resetSelection() {
+      document.querySelectorAll('.option-item').forEach(el => {
+        el.classList.remove('selected', 'is-correct', 'is-incorrect');
+        const r = el.querySelector('input[type="radio"]');
+        if (r) r.checked = false;
+      });
+      explanationCard.classList.remove('visible');
+      appendTelemetryLog('RESET', 'Quiz', 'Đặt lại trạng thái ban đầu');
+    }
+
+    btnRevealNow.addEventListener('click', () => {
+      revealAnswers(document.querySelector('.option-item.selected'));
+    });
+
+    btnReset.addEventListener('click', resetSelection);
+
+    btnSubmit.addEventListener('click', () => {
+      const selected = document.querySelector('.option-item.selected');
+      if (!selected) {
+        alert('Vui lòng chọn một phương án trước khi xác nhận.');
+        return;
+      }
+      revealAnswers(selected);
+      appendTelemetryLog('SUBMIT', selected.getAttribute('data-key'), 'Đã xác nhận bài thi', 'event-click');
+    });
+
+    trackedEvents.forEach(evt => {
+      document.addEventListener(evt, recordEvent, true);
+    });
+  </script>
+
+  <!-- Nạp Userscript tự động giải đề & mô phỏng thao tác -->
+  <script src="../client/quiz_agent.user.js"></script>
+</body>
+</html>
