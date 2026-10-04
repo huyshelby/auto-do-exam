@@ -42,3 +42,8 @@ lerna-debug.log*
 # TypeScript cache
 *.tsbuildinfo
 next-env.d.ts
+
+# Python / tooling
+__pycache__/
+*.pyc
+.playwright-mcp/
