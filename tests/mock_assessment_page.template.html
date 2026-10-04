@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hai model, một đề thi CCHC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #e9edf2;
+  --sheet: #fbfcfd;
+  --ink: #16213a;
+  --muted: #5b6780;
+  --line: #cdd5e0;
+  --a: #2b59c3;   --a-soft: #e0e8fa;
+  --b: #a8620a;   --b-soft: #f5e6cd;
+  --ok: #1b8a5a;  --ok-soft: #d6efe3;
+  --bad: #c43a2f; --bad-soft: #f8dcd9;
+  --warn: #8a6100;
+  --display: 'Bricolage Grotesque', 'Be Vietnam Pro', system-ui, sans-serif;
+  --body: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { background: var(--paper); }
+body { font-family: var(--body); color: var(--ink); background: var(--paper); line-height: 1.5; font-size: 15px; min-height: 100vh; }
+button, select { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+
+.page { max-width: 1320px; margin: 0 auto; padding: 24px 20px 64px; }
+
+/* ---------- Top ---------- */
+.top { display: flex; flex-wrap: wrap; gap: 20px 40px; align-items: flex-end; justify-content: space-between; padding-bottom: 20px; border-bottom: 2px solid var(--ink); }
+.top h1 { font-family: var(--display); font-weight: 800; font-size: clamp(26px, 3.4vw, 40px); line-height: 1.05; letter-spacing: -0.02em; max-width: 18ch; }
+.top p { color: var(--muted); max-width: 60ch; margin-top: 8px; }
+.controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.seg { display: inline-flex; border: 1.5px solid var(--ink); border-radius: 8px; overflow: hidden; background: var(--sheet); }
+.seg label { cursor: pointer; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg span { display: block; padding: 8px 14px; font-weight: 500; font-size: 14px; }
+.seg input:checked + span { background: var(--ink); color: var(--sheet); }
+.seg input:focus-visible + span { outline: 3px solid var(--ink); outline-offset: 2px; }
+.seg input:disabled + span { opacity: .55; cursor: not-allowed; }
+.btn { border: 1.5px solid var(--ink); background: var(--ink); color: var(--sheet); padding: 9px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+.btn.ghost { background: transparent; color: var(--ink); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.status { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.status::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: var(--line); }
+.status.on::before { background: var(--ok); }
+.status.off::before { background: var(--bad); }
+
+.modehint { margin-top: 12px; font-size: 13px; color: var(--muted); max-width: 90ch; }
+.banner { margin-top: 16px; padding: 12px 16px; border-left: 4px solid var(--bad); background: var(--bad-soft); border-radius: 0 8px 8px 0; }
+.banner code { background: rgba(0,0,0,.07); padding: 1px 6px; border-radius: 4px; }
+.banner[hidden] { display: none; }
+
+/* ---------- Arena ---------- */
+.arena { display: grid; grid-template-columns: 1fr 1fr; margin-top: 24px; }
+.side { --side: var(--a); --side-soft: var(--a-soft); padding: 0 28px 0 0; min-width: 0; }
+.side[data-side="b"] { --side: var(--b); --side-soft: var(--b-soft); padding: 0 0 0 28px; border-left: 2px solid var(--ink); }
+
+.s-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.s-head label { display: block; font-size: 13px; color: var(--side); font-weight: 600; margin-bottom: 4px; }
+.s-head select { border: 1.5px solid var(--side); background: var(--sheet); border-radius: 8px; padding: 7px 10px; font-weight: 600; min-width: 190px; max-width: 100%; }
+.s-head select:disabled { opacity: .7; }
+.score { font-family: var(--display); font-weight: 800; color: var(--side); line-height: 1; text-align: right; white-space: nowrap; }
+.score .n { font-size: clamp(44px, 6vw, 72px); letter-spacing: -0.03em; }
+.score .of { font-size: 20px; color: var(--muted); font-weight: 600; margin-left: 4px; }
+
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; }
+.stats div { background: var(--sheet); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+.stats dt { font-size: 12px; color: var(--muted); }
+.stats dd { font-weight: 700; font-variant-numeric: tabular-nums; }
+.bar { height: 6px; background: var(--line); border-radius: 3px; margin-top: 12px; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: var(--side); transition: width .3s ease; }
+
+/* ---------- Question card ---------- */
+.card { margin-top: 16px; background: var(--sheet); border: 1.5px solid var(--ink); border-radius: 10px; padding: 18px 20px; min-height: 360px; display: flex; flex-direction: column; box-shadow: 4px 4px 0 var(--side-soft); }
+.card .meta { font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
+.card .q { font-weight: 600; font-size: 16px; margin: 8px 0 14px; max-width: 70ch; }
+.opts { list-style: none; display: grid; gap: 8px; }
+.opt { display: flex; gap: 12px; align-items: flex-start; padding: 9px 12px; border: 1.5px solid var(--line); border-radius: 8px; background: #fff; }
+.bub { flex: none; width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--ink); display: grid; place-items: center; font-weight: 700; font-size: 13px; background: #fff; }
+.opt.is-chosen .bub { background: var(--ink); color: #fff; }
+.opt.is-right { border-color: var(--ok); background: var(--ok-soft); }
+.opt.is-right .bub { border-color: var(--ok); }
+.opt.is-wrong { border-color: var(--bad); background: var(--bad-soft); }
+.opt.is-wrong .bub { background: var(--bad); border-color: var(--bad); color: #fff; }
+.opt .tag { margin-left: auto; font-size: 12px; font-weight: 600; white-space: nowrap; padding-top: 3px; }
+.opt.is-right .tag { color: var(--ok); }
+.opt.is-wrong .tag { color: var(--bad); }
+.verdict { margin-top: auto; padding-top: 14px; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; font-size: 13px; color: var(--muted); }
+.stamp { font-family: var(--display); font-weight: 800; font-size: 18px; padding: 2px 12px; border: 2px solid currentColor; border-radius: 6px; transform: rotate(-3deg); }
+.stamp.ok { color: var(--ok); } .stamp.bad { color: var(--bad); } .stamp.err { color: var(--warn); }
+.fb { color: var(--warn); font-weight: 600; }
+.card details { margin-top: 10px; font-size: 13px; color: var(--muted); }
+.card details p { margin-top: 6px; white-space: pre-wrap; max-height: 140px; overflow: auto; background: var(--paper); padding: 8px 10px; border-radius: 6px; }
+.empty { margin: auto; text-align: center; color: var(--muted); max-width: 32ch; }
+.thinking { color: var(--side); font-weight: 600; }
+.thinking::after { content: ''; display: inline-block; width: 8px; height: 8px; margin-left: 8px; border-radius: 50%; background: var(--side); animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .15; transform: scale(.6); } }
+
+/* ---------- Answer sheet ---------- */
+.sheet { list-style: none; display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; margin-top: 16px; }
+.cell { width: 100%; aspect-ratio: 1; border: 1.5px solid var(--line); border-radius: 8px; background: var(--sheet); cursor: pointer; display: grid; place-items: center; position: relative; font-weight: 700; }
+.cell .no { position: absolute; top: 2px; left: 4px; font-size: 9px; color: var(--muted); font-weight: 500; }
+.cell .ans { font-size: 14px; }
+.cell.st-ok { background: var(--ok); border-color: var(--ok); color: #fff; }
+.cell.st-bad { background: var(--bad); border-color: var(--bad); color: #fff; }
+.cell.st-err { background: var(--warn); border-color: var(--warn); color: #fff; }
+.cell.st-ok .no, .cell.st-bad .no, .cell.st-err .no { color: rgba(255,255,255,.8); }
+.cell.st-run { border-color: var(--side); border-width: 2.5px; animation: pulse 1s ease-in-out infinite; }
+.cell.sel { outline: 3px solid var(--ink); outline-offset: 1px; }
+.sheet-hint { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+/* ---------- Results ---------- */
+.results { margin-top: 48px; padding-top: 28px; border-top: 2px solid var(--ink); }
+.results[hidden] { display: none; }
+.results h2 { font-family: var(--display); font-weight: 800; font-size: clamp(24px, 3vw, 34px); letter-spacing: -0.02em; line-height: 1.1; max-width: 30ch; }
+.results .sub { color: var(--muted); margin-top: 6px; max-width: 70ch; }
+.metrics { margin-top: 22px; display: grid; gap: 14px; max-width: 880px; }
+.metric { display: grid; grid-template-columns: 170px 1fr; gap: 6px 16px; align-items: center; }
+.metric h3 { font-size: 14px; font-weight: 600; }
+.metric .rows { display: grid; gap: 5px; }
+.mrow { display: grid; grid-template-columns: 1fr 96px; gap: 10px; align-items: center; }
+.mrow .track { height: 14px; background: var(--line); border-radius: 7px; overflow: hidden; }
+.mrow .fill { height: 100%; border-radius: 7px; }
+.mrow.a .fill { background: var(--a); } .mrow.b .fill { background: var(--b); }
+.mrow .val { font-variant-numeric: tabular-nums; font-weight: 600; font-size: 14px; }
+.mrow.best .val::after { content: ' ✓'; color: var(--ok); }
+.legend { display: flex; gap: 18px; margin-top: 16px; font-size: 13px; font-weight: 600; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
+.block { margin-top: 36px; }
+.block h3 { font-family: var(--display); font-size: 20px; font-weight: 800; letter-spacing: -0.01em; }
+.block .note { color: var(--muted); font-size: 13px; margin-top: 4px; }
+.diffs { margin-top: 12px; display: grid; gap: 10px; }
+.diff { background: var(--sheet); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+.diff p { font-weight: 500; margin-bottom: 8px; max-width: 80ch; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; font-size: 13px; }
+.chip { padding: 3px 10px; border-radius: 999px; border: 1.5px solid var(--line); font-weight: 600; }
+.chip.ok { border-color: var(--ok); background: var(--ok-soft); color: var(--ok); }
+.chip.bad { border-color: var(--bad); background: var(--bad-soft); color: var(--bad); }
+.tablewrap { overflow-x: auto; margin-top: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--sheet); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { background: var(--paper); font-weight: 600; font-size: 13px; white-space: nowrap; }
+td.c { text-align: center; font-weight: 700; white-space: nowrap; }
+td.ok { color: var(--ok); background: var(--ok-soft); } td.bad { color: var(--bad); background: var(--bad-soft); } td.err { color: var(--warn); }
+tr:last-child td { border-bottom: 0; }
+.actions { display: flex; gap: 12px; margin-top: 28px; flex-wrap: wrap; }
+.foot { margin-top: 18px; font-size: 12px; color: var(--muted); max-width: 80ch; }
+
+@media (max-width: 960px) {
+  .arena { grid-template-columns: 1fr; }
+  .side, .side[data-side="b"] { padding: 0; border-left: 0; }
+  .side[data-side="b"] { margin-top: 32px; padding-top: 24px; border-top: 2px solid var(--ink); }
+  .metric { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .sheet { grid-template-columns: repeat(6, 1fr); }
+  .s-head { flex-direction: column; }
+  .score { text-align: left; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <div>
+      <h1>Hai model, cùng một đề thi CCHC</h1>
+      <p>30 câu trắc nghiệm trích từ Quyết định 1963/QĐ-UBND và Kế hoạch 244/KH-UBND. Mỗi bên là một model chạy cục bộ trên Ollama, tự tra tài liệu và điền phiếu trả lời.</p>
+    </div>
+    <div class="controls">
+      <div class="seg" role="radiogroup" aria-label="Cách chạy">
+        <label><input type="radio" name="mode" value="sequential" checked><span>Lần lượt</span></label>
+        <label><input type="radio" name="mode" value="parallel"><span>Song song</span></label>
+      </div>
+      <div class="seg" role="radiogroup" aria-label="Nhịp trả lời">
+        <label><input type="radio" name="pace" value="fast" checked><span>Nhanh</span></label>
+        <label><input type="radio" name="pace" value="human"><span>Nhịp người (3–6 s/câu)</span></label>
+      </div>
+      <button class="btn" id="startBtn" type="button">Bắt đầu</button>
+      <button class="btn ghost" id="resetBtn" type="button">Làm lại</button>
+      <span class="status" id="status">Đang kiểm tra server…</span>
+    </div>
+  </header>
+
+  <p class="modehint">Lần lượt chạy bên trái xong rồi mới chạy bên phải, nên thời gian đo được chính xác. Song song cho cả hai chạy cùng lúc nhưng sẽ chậm nếu hai model không vừa bộ nhớ GPU.</p>
+  <div class="banner" id="banner" hidden></div>
+
+  <main class="arena" id="arena"></main>
+
+  <section class="results" id="results" hidden aria-live="polite"></section>
+</div>
+
+<script>
+const QUIZ = __QUIZ_JSON__;
+const API = new URLSearchParams(location.search).get('api') || 'http://127.0.0.1:8000';
+const N = QUIZ.length;
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const fmtMs = ms => ms < 1000 ? Math.round(ms) + ' ms' : (ms / 1000).toLocaleString('vi-VN', { maximumFractionDigits: 1 }) + ' s';
+const fmtPct = x => (x * 100).toLocaleString('vi-VN', { maximumFractionDigits: 0 }) + '%';
+
+const sides = {
+  a: { id: 'a', name: '', res: Array(N).fill(null), cur: -1, view: null, running: false, done: false, t0: 0, t1: 0 },
+  b: { id: 'b', name: '', res: Array(N).fill(null), cur: -1, view: null, running: false, done: false, t0: 0, t1: 0 },
+};
+let runId = 0, busy = false, models = [];
+
+/* ---------- Layout ---------- */
+function shell(id) {
+  const left = id === 'a';
+  return `
+  <section class="side" data-side="${id}" aria-label="Model ${left ? 'bên trái' : 'bên phải'}">
+    <div class="s-head">
+      <div>
+        <label for="model-${id}">Model ${left ? 'bên trái' : 'bên phải'}</label>
+        <select id="model-${id}"></select>
+      </div>
+      <div class="score" aria-live="polite"><span class="n" id="score-${id}">0</span><span class="of">/ ${N}</span></div>
+    </div>
+    <dl class="stats">
+      <div><dt>Đã trả lời</dt><dd id="done-${id}">0</dd></div>
+      <div><dt>Thời gian TB</dt><dd id="avg-${id}">–</dd></div>
+      <div><dt>Độ tin cậy TB</dt><dd id="conf-${id}">–</dd></div>
+      <div><dt>Dùng heuristic</dt><dd id="fb-${id}">0</dd></div>
+    </dl>
+    <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="${N}" id="pbar-${id}"><i id="bar-${id}"></i></div>
+    <article class="card" id="card-${id}"></article>
+    <ol class="sheet" id="sheet-${id}"></ol>
+    <p class="sheet-hint">Bấm vào một ô để xem lại câu đó.</p>
+  </section>`;
+}
+
+function buildSheet(id) {
+  $('#sheet-' + id).innerHTML = QUIZ.map((q, i) =>
+    `<li><button type="button" class="cell" data-i="${i}" data-side="${id}" aria-label="Câu ${i + 1}"><span class="no">${i + 1}</span><span class="ans"></span></button></li>`
+  ).join('');
+}
+
+/* ---------- Rendering ---------- */
+function renderCard(s) {
+  const el = $('#card-' + s.id);
+  const i = s.view ?? (s.cur >= 0 ? s.cur : null);
+  if (i === null) {
+    el.innerHTML = `<p class="empty">Chọn model cho mỗi bên rồi bấm <b>Bắt đầu</b>. Câu hỏi sẽ hiện ở đây khi model đọc đến.</p>`;
+    return;
+  }
+  const q = QUIZ[i], r = s.res[i];
+  const opts = q.options.map(o => {
+    let cls = '', tag = '';
+    if (r && !r.err) {
+      const chosen = r.key === o.key, right = o.key === q.expected;
+      if (chosen) cls += ' is-chosen';
+      if (right) { cls += ' is-right'; tag = chosen ? 'Chọn đúng' : 'Đáp án đúng'; }
+      else if (chosen) { cls += ' is-wrong'; tag = 'Model chọn'; }
+    } else if (r && r.err && o.key === q.expected) { cls += ' is-right'; tag = 'Đáp án đúng'; }
+    return `<li class="opt${cls}"><span class="bub">${o.key}</span><span>${esc(o.text)}</span><span class="tag">${tag}</span></li>`;
+  }).join('');
+  let foot;
+  if (!r) foot = `<span class="thinking">Đang đọc tài liệu và suy luận</span>`;
+  else if (r.err) foot = `<span class="stamp err">Lỗi</span><span>${esc(r.err)}</span>`;
+  else foot = `<span class="stamp ${r.correct ? 'ok' : 'bad'}">${r.correct ? 'Đúng' : 'Sai'}</span>
+      <span>${fmtMs(r.ms)}</span><span>tin cậy ${fmtPct(r.conf)}</span>
+      ${r.source === 'fallback' ? '<span class="fb">Model không trả lời, đã dùng heuristic</span>' : ''}`;
+  el.innerHTML = `
+    <div class="meta"><span>Câu ${i + 1} / ${N}</span><span>${q.doc === '244' ? 'KH 244/KH-UBND (xã Đại Lộc)' : 'QĐ 1963/QĐ-UBND (Đà Nẵng)'}</span></div>
+    <p class="q">${esc(q.question)}</p>
+    <ul class="opts">${opts}</ul>
+    <div class="verdict">${foot}</div>
+    ${r && r.chunk ? `<details><summary>Đoạn tài liệu model đã đọc</summary><p>${esc(r.chunk)}</p></details>` : ''}`;
+}
+
+function renderSheet(s) {
+  $('#sheet-' + s.id).querySelectorAll('.cell').forEach((c, i) => {
+    const r = s.res[i];
+    let st = 'st-idle', ans = '';
+    if (r && r.err) { st = 'st-err'; ans = '!'; }
+    else if (r) { st = r.correct ? 'st-ok' : 'st-bad'; ans = r.key; }
+    else if (i === s.cur && s.running) st = 'st-run';
+    c.className = 'cell ' + st + (s.view === i ? ' sel' : '');
+    c.querySelector('.ans').textContent = ans;
+    c.title = r && !r.err ? `Câu ${i + 1}: chọn ${r.key}, đáp án đúng ${QUIZ[i].expected}` : `Câu ${i + 1}`;
+  });
+}
+
+function renderStats(s) {
+  const got = s.res.filter(Boolean);
+  const ok = got.filter(r => !r.err);
+  $('#score-' + s.id).textContent = got.filter(r => r.correct).length;
+  $('#done-' + s.id).textContent = `${got.length} / ${N}`;
+  $('#avg-' + s.id).textContent = ok.length ? fmtMs(ok.reduce((a, r) => a + r.ms, 0) / ok.length) : '–';
+  $('#conf-' + s.id).textContent = ok.length ? fmtPct(ok.reduce((a, r) => a + r.conf, 0) / ok.length) : '–';
+  $('#fb-' + s.id).textContent = ok.filter(r => r.source === 'fallback').length;
+  $('#bar-' + s.id).style.width = (got.length / N * 100) + '%';
+  $('#pbar-' + s.id).setAttribute('aria-valuenow', got.length);
+}
+
+const paint = s => { renderStats(s); renderSheet(s); renderCard(s); };
+
+/* ---------- Running ---------- */
+async function ask(q, model) {
+  const t = performance.now();
+  const res = await fetch(API + '/solve', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question: q.question, options: q.options, model }),
+  });
+  if (!res.ok) throw new Error('Server trả lỗi HTTP ' + res.status);
+  const d = await res.json();
+  return { key: d.selected_key, conf: d.confidence, ms: performance.now() - t, source: d.source, chunk: d.matched_chunk, delay: d.suggested_delay_ms };
+}
+
+async function runSide(s, token, pace) {
+  s.running = true; s.t0 = performance.now();
+  for (let i = 0; i < N; i++) {
+    if (token !== runId) return;
+    s.cur = i; if (s.view === null || s.view === i - 1) s.view = null;
+    paint(s);
+    let r;
+    try {
+      r = await ask(QUIZ[i], s.name);
+      r.correct = r.key === QUIZ[i].expected;
+    } catch (e) {
+      r = { err: e.message || 'Không gọi được server', ms: 0 };
+    }
+    if (token !== runId) return;
+    s.res[i] = r; paint(s);
+    await sleep(pace === 'human' && !r.err ? Math.min(r.delay || 3000, 6000) : 120);
+  }
+  s.running = false; s.done = true; s.t1 = performance.now(); paint(s);
+}
+
+async function start() {
+  if (busy) return;
+  const mode = document.querySelector('input[name=mode]:checked').value;
+  const pace = document.querySelector('input[name=pace]:checked').value;
+  const alive = await checkServer();
+  if (!alive) return;
+  for (const s of Object.values(sides)) {
+    s.name = $('#model-' + s.id).value;
+    s.res = Array(N).fill(null); s.cur = -1; s.view = null; s.running = false; s.done = false;
+    paint(s);
+  }
+  $('#results').hidden = true;
+  setBusy(true);
+  const token = ++runId;
+  // Nạp sẵn model vào bộ nhớ để lần đầu nạp model không bị tính vào thời gian trả lời
+  $('#startBtn').textContent = 'Đang nạp model…';
+  const names = [...new Set([sides.a.name, sides.b.name])];
+  await Promise.all(names.map(n => ask(QUIZ[0], n).catch(() => null)));
+  try { await fetch(API + '/reload-docs', { method: 'POST' }); } catch (e) { /* xóa cache để đo công bằng */ }
+  if (token !== runId) return;
+  $('#startBtn').textContent = 'Đang chạy…';
+  if (mode === 'parallel') await Promise.all([runSide(sides.a, token, pace), runSide(sides.b, token, pace)]);
+  else { await runSide(sides.a, token, pace); await runSide(sides.b, token, pace); }
+  if (token !== runId) return;
+  setBusy(false);
+  showResults(mode, pace);
+}
+
+function reset() {
+  runId++;
+  for (const s of Object.values(sides)) {
+    s.res = Array(N).fill(null); s.cur = -1; s.view = null; s.running = false; s.done = false; paint(s);
+  }
+  $('#results').hidden = true;
+  setBusy(false);
+}
+
+function setBusy(b) {
+  busy = b;
+  $('#startBtn').disabled = b;
+  $('#startBtn').textContent = b ? 'Đang chạy…' : 'Bắt đầu';
+  document.querySelectorAll('select, input[type=radio]').forEach(e => e.disabled = b);
+}
+
+/* ---------- Results ---------- */
+function summarize(s) {
+  const ok = s.res.filter(r => r && !r.err);
+  return {
+    name: s.name,
+    correct: s.res.filter(r => r && r.correct).length,
+    errors: s.res.filter(r => r && r.err).length,
+    avgMs: ok.length ? ok.reduce((a, r) => a + r.ms, 0) / ok.length : 0,
+    totalMs: s.t1 - s.t0,
+    conf: ok.length ? ok.reduce((a, r) => a + r.conf, 0) / ok.length : 0,
+    fallback: ok.filter(r => r.source === 'fallback').length,
+  };
+}
+
+function showResults(mode, pace) {
+  const A = summarize(sides.a), B = summarize(sides.b);
+  let verdict, sub;
+  const fast = (x, y) => (y.avgMs / Math.max(x.avgMs, 1)).toLocaleString('vi-VN', { maximumFractionDigits: 1 });
+  if (A.correct !== B.correct) {
+    const w = A.correct > B.correct ? A : B, l = w === A ? B : A;
+    verdict = `${w.name} chính xác hơn: ${w.correct}/${N} so với ${l.correct}/${N}`;
+    sub = w.avgMs > l.avgMs ? `Đổi lại, ${l.name} nhanh hơn khoảng ${fast(l, w)} lần mỗi câu.` : `${w.name} cũng nhanh hơn khoảng ${fast(w, l)} lần mỗi câu.`;
+  } else {
+    const w = A.avgMs <= B.avgMs ? A : B, l = w === A ? B : A;
+    verdict = `Hòa về độ chính xác: cùng đúng ${A.correct}/${N} câu`;
+    sub = `${w.name} nhanh hơn khoảng ${fast(w, l)} lần mỗi câu (${fmtMs(w.avgMs)} so với ${fmtMs(l.avgMs)}).`;
+  }
+  const metrics = [
+    { label: 'Câu trả lời đúng', a: A.correct, b: B.correct, fmt: v => `${v}/${N}`, max: N, better: 'high' },
+    { label: 'Thời gian trung bình mỗi câu', a: A.avgMs, b: B.avgMs, fmt: fmtMs, max: Math.max(A.avgMs, B.avgMs, 1), better: 'low' },
+    { label: 'Tổng thời gian chạy', a: A.totalMs, b: B.totalMs, fmt: v => fmtMs(v), max: Math.max(A.totalMs, B.totalMs, 1), better: 'low' },
+    { label: 'Độ tin cậy trung bình', a: A.conf, b: B.conf, fmt: fmtPct, max: 1, better: 'high' },
+    { label: 'Câu phải dùng heuristic', a: A.fallback, b: B.fallback, fmt: v => v, max: Math.max(A.fallback, B.fallback, 1), better: 'low' },
+  ];
+  const row = (side, v, m, best) =>
+    `<div class="mrow ${side}${best ? ' best' : ''}"><div class="track"><div class="fill" style="width:${Math.max(2, v / m.max * 100)}%"></div></div><span class="val">${m.fmt(v)}</span></div>`;
+  const metricsHtml = metrics.map(m => {
+    const tie = m.a === m.b;
+    const aBest = !tie && (m.better === 'high' ? m.a > m.b : m.a < m.b);
+    const bBest = !tie && !aBest;
+    return `<div class="metric"><h3>${m.label}</h3><div class="rows">${row('a', m.a, m, aBest)}${row('b', m.b, m, bBest)}</div></div>`;
+  }).join('');
+
+  const chip = (r, q) => !r ? `<span class="chip">chưa có</span>` : r.err ? `<span class="chip bad">lỗi</span>` :
+    `<span class="chip ${r.correct ? 'ok' : 'bad'}">${r.key} ${r.correct ? '✓' : '✗'}</span>`;
+  const diffs = QUIZ.map((q, i) => ({ q, i, ra: sides.a.res[i], rb: sides.b.res[i] }))
+    .filter(x => (x.ra && x.ra.key) !== (x.rb && x.rb.key) || (x.ra && !x.ra.correct));
+  const diffHtml = diffs.length ? diffs.map(x => `
+    <div class="diff"><p>Câu ${x.i + 1}. ${esc(x.q.question)}</p>
+      <div class="chips"><span class="chip">Đáp án đúng: ${x.q.expected}</span>
+      <span>${esc(A.name)}</span>${chip(x.ra, x.q)}<span>${esc(B.name)}</span>${chip(x.rb, x.q)}</div></div>`).join('')
+    : `<p class="note">Cả hai model đều đúng ở mọi câu.</p>`;
+
+  const cell = (r, q) => !r ? '<td class="c">–</td>' : r.err ? '<td class="c err">!</td>' : `<td class="c ${r.correct ? 'ok' : 'bad'}">${r.key}</td>`;
+  const tableHtml = QUIZ.map((q, i) => `<tr><td>${i + 1}</td><td>${esc(q.question)}</td><td class="c">${q.expected}</td>${cell(sides.a.res[i], q)}${cell(sides.b.res[i], q)}</tr>`).join('');
+
+  const el = $('#results');
+  el.hidden = false;
+  el.innerHTML = `
+    <h2>${esc(verdict)}</h2>
+    <p class="sub">${esc(sub)}</p>
+    <div class="legend"><span style="color:var(--a)"><i style="background:var(--a)"></i>${esc(A.name)}</span><span style="color:var(--b)"><i style="background:var(--b)"></i>${esc(B.name)}</span></div>
+    <div class="metrics">${metricsHtml}</div>
+    <div class="block"><h3>Những câu hai model khác nhau hoặc sai</h3>
+      <p class="note">Mỗi dòng cho biết đáp án đúng và lựa chọn của từng model.</p>
+      <div class="diffs">${diffHtml}</div></div>
+    <div class="block"><h3>Bảng từng câu</h3>
+      <div class="tablewrap"><table><thead><tr><th>Câu</th><th>Nội dung</th><th>Đúng</th><th style="color:var(--a)">${esc(A.name)}</th><th style="color:var(--b)">${esc(B.name)}</th></tr></thead><tbody>${tableHtml}</tbody></table></div></div>
+    <div class="actions"><button class="btn" id="againBtn" type="button">Chạy lại</button><button class="btn ghost" id="dlBtn" type="button">Tải kết quả (.json)</button></div>
+    <p class="foot">Thời gian là thời gian chờ phía trình duyệt cho mỗi câu, gồm truy xuất tài liệu và suy luận.${mode === 'parallel' ? ' Ở chế độ song song hai model dùng chung máy nên thời gian của cả hai đều chậm hơn khi chạy riêng. Chọn "Lần lượt" để so sánh tốc độ công bằng hơn.' : ''} Bộ 30 câu do nhóm tự soạn từ hai văn bản trong thư mục docs/, nên điểm số chỉ phản ánh bộ đề này.</p>`;
+  $('#againBtn').onclick = () => { window.scrollTo({ top: 0, behavior: 'smooth' }); start(); };
+  $('#dlBtn').onclick = () => {
+    const out = { when: new Date().toISOString(), mode, pace, summary: { a: A, b: B },
+      questions: QUIZ.map((q, i) => ({ id: q.id, expected: q.expected, a: sides.a.res[i], b: sides.b.res[i] })) };
+    const url = URL.createObjectURL(new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' }));
+    const a = document.createElement('a'); a.href = url; a.download = 'ket-qua-so-sanh-model.json'; a.click(); URL.revokeObjectURL(url);
+  };
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ---------- Server & setup ---------- */
+async function checkServer() {
+  const status = $('#status'), banner = $('#banner');
+  try {
+    const m = await (await fetch(API + '/models')).json();
+    models = m.models.length ? m.models : [m.default];
+    status.className = 'status on'; status.textContent = `Server sẵn sàng · ${models.length} model`;
+    banner.hidden = true;
+    for (const id of ['a', 'b']) {
+      const sel = $('#model-' + id), keep = sel.value;
+      sel.innerHTML = models.map(n => `<option>${esc(n)}</option>`).join('');
+      const pick = keep && models.includes(keep) ? keep
+        : (id === 'a' ? models.find(n => /3b/.test(n)) : models.find(n => /7b/.test(n))) || models[id === 'a' ? 0 : models.length - 1];
+      sel.value = pick;
+    }
+    return true;
+  } catch (e) {
+    status.className = 'status off'; status.textContent = 'Không kết nối được server';
+    banner.hidden = false;
+    banner.innerHTML = `Không gọi được <code>${esc(API)}</code>. Khởi động backend bằng <code>python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000</code>, đảm bảo Ollama đang chạy, rồi bấm Bắt đầu lại.`;
+    return false;
+  }
+}
+
+$('#arena').innerHTML = shell('a') + shell('b');
+buildSheet('a'); buildSheet('b');
+for (const s of Object.values(sides)) paint(s);
+$('#arena').addEventListener('click', e => {
+  const c = e.target.closest('.cell'); if (!c) return;
+  const s = sides[c.dataset.side], i = +c.dataset.i;
+  if (!s.res[i] && i !== s.cur) return;
+  s.view = s.view === i ? null : i; paint(s);
+});
+$('#startBtn').addEventListener('click', start);
+$('#resetBtn').addEventListener('click', reset);
+checkServer();
+</script>
+</body>
+</html>

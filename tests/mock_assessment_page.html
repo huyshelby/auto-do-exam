@@ -1,991 +1,1223 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kỳ Thi Đánh Giá Kiến Thức Cải Cách Hành Chính Năm 2026</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #090d16;
-      --card-bg: rgba(22, 30, 49, 0.75);
-      --card-border: rgba(255, 255, 255, 0.08);
-      --primary: #3b82f6;
-      --primary-glow: rgba(59, 130, 246, 0.25);
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --success: #10b981;
-      --success-glow: rgba(16, 185, 129, 0.25);
-      --danger: #ef4444;
-      --danger-glow: rgba(239, 68, 68, 0.2);
-      --warning: #f59e0b;
-      --accent: #8b5cf6;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    
-    body {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #090d16 65%);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 24px 20px;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    /* Top Navigation */
-    .top-nav {
-      width: 100%;
-      max-width: 1100px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      padding: 12px 20px;
-      background: rgba(15, 23, 42, 0.6);
-      backdrop-filter: blur(12px);
-      border: 1px solid var(--card-border);
-      border-radius: 14px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 700;
-      font-size: 15px;
-    }
-
-    .brand-icon {
-      width: 28px;
-      height: 28px;
-      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-      border-radius: 8px;
-      display: grid;
-      place-items: center;
-      font-size: 13px;
-      font-weight: 800;
-    }
-
-    .controls-group {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .toggle-label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      color: var(--text-muted);
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .toggle-switch {
-      position: relative;
-      width: 38px;
-      height: 20px;
-      background: #334155;
-      border-radius: 999px;
-      transition: 0.3s;
-      display: inline-block;
-    }
-
-    .toggle-switch::after {
-      content: '';
-      position: absolute;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: white;
-      top: 3px;
-      left: 3px;
-      transition: 0.3s;
-    }
-
-    input:checked + .toggle-switch { background: var(--success); }
-    input:checked + .toggle-switch::after { transform: translateX(18px); }
-
-    /* Main Container */
-    .container {
-      width: 100%;
-      max-width: 1100px;
-      display: grid;
-      grid-template-columns: 1fr 340px;
-      gap: 24px;
-      align-items: start;
-    }
-
-    /* Question Navigator Bar */
-    .nav-pagination {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 20px;
-      overflow-x: auto;
-      padding-bottom: 4px;
-    }
-
-    .page-btn {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      background: rgba(15, 23, 42, 0.7);
-      border: 1px solid var(--card-border);
-      color: var(--text-muted);
-      font-weight: 700;
-      font-size: 14px;
-      cursor: pointer;
-      display: grid;
-      place-items: center;
-      transition: all 0.2s;
-    }
-
-    .page-btn:hover {
-      border-color: var(--primary);
-      color: var(--text);
-    }
-
-    .page-btn.active {
-      background: var(--primary);
-      border-color: var(--primary);
-      color: white;
-      box-shadow: 0 4px 12px var(--primary-glow);
-    }
-
-    .page-btn.answered {
-      border-color: var(--success);
-      color: #34d399;
-      background: rgba(16, 185, 129, 0.1);
-    }
-
-    /* Quiz Card */
-    .quiz-card {
-      background: var(--card-bg);
-      backdrop-filter: blur(16px);
-      border: 1px solid var(--card-border);
-      border-radius: 18px;
-      padding: 28px;
-      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
-      position: relative;
-    }
-
-    .quiz-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-bottom: 14px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      margin-bottom: 20px;
-    }
-
-    .badges {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .badge {
-      padding: 5px 12px;
-      border-radius: 9999px;
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .badge-primary {
-      background: rgba(59, 130, 246, 0.15);
-      color: #60a5fa;
-      border: 1px solid rgba(59, 130, 246, 0.3);
-    }
-
-    .badge-doc {
-      background: rgba(139, 92, 246, 0.15);
-      color: #c4b5fd;
-      border: 1px solid rgba(139, 92, 246, 0.3);
-    }
-
-    .timer-text {
-      font-size: 13px;
-      font-family: 'JetBrains Mono', monospace;
-      color: var(--text-muted);
-    }
-
-    .question-title {
-      font-size: 18px;
-      line-height: 1.6;
-      font-weight: 700;
-      margin-bottom: 22px;
-      color: #ffffff;
-    }
-
-    /* Options */
-    .options-group {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .option-item {
-      display: flex;
-      align-items: flex-start;
-      padding: 15px 18px;
-      background: rgba(15, 23, 42, 0.7);
-      border: 1.5px solid rgba(255, 255, 255, 0.08);
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      user-select: none;
-      position: relative;
-    }
-
-    .option-item:hover {
-      border-color: rgba(59, 130, 246, 0.5);
-      background: rgba(30, 41, 59, 0.8);
-      transform: translateY(-1px);
-    }
-
-    .option-item.selected {
-      border-color: var(--primary);
-      background: rgba(30, 58, 138, 0.35);
-      box-shadow: 0 0 0 1px var(--primary), 0 8px 20px -6px var(--primary-glow);
-    }
-
-    .option-item.is-correct {
-      border-color: var(--success) !important;
-      background: linear-gradient(90deg, rgba(6, 78, 59, 0.45) 0%, rgba(15, 23, 42, 0.8) 100%) !important;
-      box-shadow: 0 0 0 2px var(--success), 0 10px 25px -5px var(--success-glow) !important;
-      transform: translateY(-2px);
-    }
-
-    .option-item.is-incorrect {
-      border-color: var(--danger) !important;
-      background: linear-gradient(90deg, rgba(127, 29, 29, 0.4) 0%, rgba(15, 23, 42, 0.8) 100%) !important;
-      box-shadow: 0 0 0 1px var(--danger), 0 8px 20px -6px var(--danger-glow) !important;
-      opacity: 0.85;
-    }
-
-    .option-indicator {
-      width: 24px;
-      height: 24px;
-      border-radius: 6px;
-      border: 1.5px solid rgba(255, 255, 255, 0.2);
-      display: grid;
-      place-items: center;
-      font-weight: 700;
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-right: 14px;
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
-
-    .option-item.selected .option-indicator {
-      background: var(--primary);
-      border-color: var(--primary);
-      color: white;
-    }
-
-    .option-item.is-correct .option-indicator {
-      background: var(--success);
-      border-color: var(--success);
-      color: white;
-    }
-
-    .option-item.is-incorrect .option-indicator {
-      background: var(--danger);
-      border-color: var(--danger);
-      color: white;
-    }
-
-    .option-content-wrapper {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .option-label {
-      font-size: 15px;
-      line-height: 1.5;
-      color: #e2e8f0;
-      font-weight: 500;
-    }
-
-    .status-badge {
-      display: none;
-      align-items: center;
-      gap: 5px;
-      font-size: 12px;
-      font-weight: 700;
-      padding: 3px 10px;
-      border-radius: 999px;
-      margin-left: auto;
-      flex-shrink: 0;
-    }
-
-    .option-item.is-correct .status-badge.badge-correct {
-      display: inline-flex;
-      background: rgba(16, 185, 129, 0.2);
-      color: #34d399;
-      border: 1px solid rgba(16, 185, 129, 0.4);
-    }
-
-    .option-item.is-incorrect .status-badge.badge-wrong {
-      display: inline-flex;
-      background: rgba(239, 68, 68, 0.2);
-      color: #f87171;
-      border: 1px solid rgba(239, 68, 68, 0.4);
-    }
-
-    /* Explanation Card */
-    .explanation-card {
-      margin-top: 22px;
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      border-radius: 14px;
-      padding: 18px;
-      display: none;
-      animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .explanation-card.visible { display: block; }
-
-    @keyframes slideDown {
-      from { opacity: 0; transform: translateY(-8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .explanation-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-
-    .explanation-title {
-      font-size: 13.5px;
-      font-weight: 700;
-      color: #34d399;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .citation-source {
-      font-size: 11.5px;
-      font-family: 'JetBrains Mono', monospace;
-      color: var(--text-muted);
-      background: rgba(255, 255, 255, 0.05);
-      padding: 3px 8px;
-      border-radius: 6px;
-    }
-
-    .citation-quote {
-      font-size: 13.5px;
-      line-height: 1.6;
-      color: #cbd5e1;
-      border-left: 3px solid #10b981;
-      padding: 8px 12px;
-      margin: 8px 0;
-      background: rgba(16, 185, 129, 0.05);
-      border-radius: 0 8px 8px 0;
-    }
-
-    .citation-meta {
-      display: flex;
-      gap: 16px;
-      margin-top: 10px;
-      padding-top: 8px;
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
-      font-size: 11.5px;
-      color: var(--text-muted);
-    }
-
-    /* Actions */
-    .actions {
-      margin-top: 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .btn {
-      padding: 11px 20px;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 13.5px;
-      cursor: pointer;
-      border: none;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.06);
-      color: #cbd5e1;
-      border: 1px solid var(--card-border);
-    }
-
-    .btn-secondary:hover:not(:disabled) {
-      background: rgba(255, 255, 255, 0.1);
-      color: #fff;
-    }
-
-    .btn-secondary:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #2563eb, #1d4ed8);
-      color: white;
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-    }
-
-    .btn-primary:hover {
-      background: linear-gradient(135deg, #3b82f6, #2563eb);
-      transform: translateY(-1px);
-    }
-
-    .btn-submit-exam {
-      background: linear-gradient(135deg, #059669, #10b981);
-      color: white;
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-    }
-
-    .btn-submit-exam:hover {
-      background: linear-gradient(135deg, #10b981, #34d399);
-      transform: translateY(-1px);
-    }
-
-    /* Telemetry Sidebar */
-    .telemetry-card {
-      background: var(--card-bg);
-      backdrop-filter: blur(16px);
-      border: 1px solid var(--card-border);
-      border-radius: 18px;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      height: 590px;
-      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
-    }
-
-    .telemetry-title {
-      font-size: 13px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--text-muted);
-      margin-bottom: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .telemetry-counter {
-      background: rgba(59, 130, 246, 0.15);
-      color: #60a5fa;
-      font-family: 'JetBrains Mono', monospace;
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-size: 11px;
-    }
-
-    .telemetry-log {
-      flex: 1;
-      background: #060910;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 10px;
-      padding: 12px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .log-item {
-      padding: 5px 8px;
-      border-radius: 6px;
-      background: rgba(255, 255, 255, 0.03);
-      border-left: 3px solid var(--primary);
-      line-height: 1.4;
-    }
-
-    .log-item.event-click {
-      border-left-color: var(--success);
-      background: rgba(16, 185, 129, 0.08);
-    }
-
-    .log-item.event-nav {
-      border-left-color: var(--accent);
-      background: rgba(139, 92, 246, 0.1);
-      color: #c4b5fd;
-    }
-
-    /* Score Modal */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(8px);
-      display: none;
-      place-items: center;
-      z-index: 1000;
-    }
-
-    .modal-overlay.active { display: grid; }
-
-    .modal-content {
-      background: #111827;
-      border: 1px solid rgba(16, 185, 129, 0.4);
-      border-radius: 20px;
-      padding: 32px;
-      max-width: 480px;
-      width: 90%;
-      text-align: center;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 40px rgba(16, 185, 129, 0.2);
-    }
-
-    .score-circle {
-      width: 84px;
-      height: 84px;
-      border-radius: 50%;
-      background: rgba(16, 185, 129, 0.15);
-      border: 2px solid var(--success);
-      margin: 0 auto 16px;
-      display: grid;
-      place-items: center;
-      font-size: 28px;
-      font-weight: 800;
-      color: #34d399;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hai model, một đề thi CCHC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #e9edf2;
+  --sheet: #fbfcfd;
+  --ink: #16213a;
+  --muted: #5b6780;
+  --line: #cdd5e0;
+  --a: #2b59c3;   --a-soft: #e0e8fa;
+  --b: #a8620a;   --b-soft: #f5e6cd;
+  --ok: #1b8a5a;  --ok-soft: #d6efe3;
+  --bad: #c43a2f; --bad-soft: #f8dcd9;
+  --warn: #8a6100;
+  --display: 'Bricolage Grotesque', 'Be Vietnam Pro', system-ui, sans-serif;
+  --body: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { background: var(--paper); }
+body { font-family: var(--body); color: var(--ink); background: var(--paper); line-height: 1.5; font-size: 15px; min-height: 100vh; }
+button, select { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+
+.page { max-width: 1320px; margin: 0 auto; padding: 24px 20px 64px; }
+
+/* ---------- Top ---------- */
+.top { display: flex; flex-wrap: wrap; gap: 20px 40px; align-items: flex-end; justify-content: space-between; padding-bottom: 20px; border-bottom: 2px solid var(--ink); }
+.top h1 { font-family: var(--display); font-weight: 800; font-size: clamp(26px, 3.4vw, 40px); line-height: 1.05; letter-spacing: -0.02em; max-width: 18ch; }
+.top p { color: var(--muted); max-width: 60ch; margin-top: 8px; }
+.controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.seg { display: inline-flex; border: 1.5px solid var(--ink); border-radius: 8px; overflow: hidden; background: var(--sheet); }
+.seg label { cursor: pointer; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg span { display: block; padding: 8px 14px; font-weight: 500; font-size: 14px; }
+.seg input:checked + span { background: var(--ink); color: var(--sheet); }
+.seg input:focus-visible + span { outline: 3px solid var(--ink); outline-offset: 2px; }
+.seg input:disabled + span { opacity: .55; cursor: not-allowed; }
+.btn { border: 1.5px solid var(--ink); background: var(--ink); color: var(--sheet); padding: 9px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+.btn.ghost { background: transparent; color: var(--ink); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.status { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.status::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: var(--line); }
+.status.on::before { background: var(--ok); }
+.status.off::before { background: var(--bad); }
+
+.modehint { margin-top: 12px; font-size: 13px; color: var(--muted); max-width: 90ch; }
+.banner { margin-top: 16px; padding: 12px 16px; border-left: 4px solid var(--bad); background: var(--bad-soft); border-radius: 0 8px 8px 0; }
+.banner code { background: rgba(0,0,0,.07); padding: 1px 6px; border-radius: 4px; }
+.banner[hidden] { display: none; }
+
+/* ---------- Arena ---------- */
+.arena { display: grid; grid-template-columns: 1fr 1fr; margin-top: 24px; }
+.side { --side: var(--a); --side-soft: var(--a-soft); padding: 0 28px 0 0; min-width: 0; }
+.side[data-side="b"] { --side: var(--b); --side-soft: var(--b-soft); padding: 0 0 0 28px; border-left: 2px solid var(--ink); }
+
+.s-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.s-head label { display: block; font-size: 13px; color: var(--side); font-weight: 600; margin-bottom: 4px; }
+.s-head select { border: 1.5px solid var(--side); background: var(--sheet); border-radius: 8px; padding: 7px 10px; font-weight: 600; min-width: 190px; max-width: 100%; }
+.s-head select:disabled { opacity: .7; }
+.score { font-family: var(--display); font-weight: 800; color: var(--side); line-height: 1; text-align: right; white-space: nowrap; }
+.score .n { font-size: clamp(44px, 6vw, 72px); letter-spacing: -0.03em; }
+.score .of { font-size: 20px; color: var(--muted); font-weight: 600; margin-left: 4px; }
+
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; }
+.stats div { background: var(--sheet); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+.stats dt { font-size: 12px; color: var(--muted); }
+.stats dd { font-weight: 700; font-variant-numeric: tabular-nums; }
+.bar { height: 6px; background: var(--line); border-radius: 3px; margin-top: 12px; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: var(--side); transition: width .3s ease; }
+
+/* ---------- Question card ---------- */
+.card { margin-top: 16px; background: var(--sheet); border: 1.5px solid var(--ink); border-radius: 10px; padding: 18px 20px; min-height: 360px; display: flex; flex-direction: column; box-shadow: 4px 4px 0 var(--side-soft); }
+.card .meta { font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
+.card .q { font-weight: 600; font-size: 16px; margin: 8px 0 14px; max-width: 70ch; }
+.opts { list-style: none; display: grid; gap: 8px; }
+.opt { display: flex; gap: 12px; align-items: flex-start; padding: 9px 12px; border: 1.5px solid var(--line); border-radius: 8px; background: #fff; }
+.bub { flex: none; width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--ink); display: grid; place-items: center; font-weight: 700; font-size: 13px; background: #fff; }
+.opt.is-chosen .bub { background: var(--ink); color: #fff; }
+.opt.is-right { border-color: var(--ok); background: var(--ok-soft); }
+.opt.is-right .bub { border-color: var(--ok); }
+.opt.is-wrong { border-color: var(--bad); background: var(--bad-soft); }
+.opt.is-wrong .bub { background: var(--bad); border-color: var(--bad); color: #fff; }
+.opt .tag { margin-left: auto; font-size: 12px; font-weight: 600; white-space: nowrap; padding-top: 3px; }
+.opt.is-right .tag { color: var(--ok); }
+.opt.is-wrong .tag { color: var(--bad); }
+.verdict { margin-top: auto; padding-top: 14px; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; font-size: 13px; color: var(--muted); }
+.stamp { font-family: var(--display); font-weight: 800; font-size: 18px; padding: 2px 12px; border: 2px solid currentColor; border-radius: 6px; transform: rotate(-3deg); }
+.stamp.ok { color: var(--ok); } .stamp.bad { color: var(--bad); } .stamp.err { color: var(--warn); }
+.fb { color: var(--warn); font-weight: 600; }
+.card details { margin-top: 10px; font-size: 13px; color: var(--muted); }
+.card details p { margin-top: 6px; white-space: pre-wrap; max-height: 140px; overflow: auto; background: var(--paper); padding: 8px 10px; border-radius: 6px; }
+.empty { margin: auto; text-align: center; color: var(--muted); max-width: 32ch; }
+.thinking { color: var(--side); font-weight: 600; }
+.thinking::after { content: ''; display: inline-block; width: 8px; height: 8px; margin-left: 8px; border-radius: 50%; background: var(--side); animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .15; transform: scale(.6); } }
+
+/* ---------- Answer sheet ---------- */
+.sheet { list-style: none; display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; margin-top: 16px; }
+.cell { width: 100%; aspect-ratio: 1; border: 1.5px solid var(--line); border-radius: 8px; background: var(--sheet); cursor: pointer; display: grid; place-items: center; position: relative; font-weight: 700; }
+.cell .no { position: absolute; top: 2px; left: 4px; font-size: 9px; color: var(--muted); font-weight: 500; }
+.cell .ans { font-size: 14px; }
+.cell.st-ok { background: var(--ok); border-color: var(--ok); color: #fff; }
+.cell.st-bad { background: var(--bad); border-color: var(--bad); color: #fff; }
+.cell.st-err { background: var(--warn); border-color: var(--warn); color: #fff; }
+.cell.st-ok .no, .cell.st-bad .no, .cell.st-err .no { color: rgba(255,255,255,.8); }
+.cell.st-run { border-color: var(--side); border-width: 2.5px; animation: pulse 1s ease-in-out infinite; }
+.cell.sel { outline: 3px solid var(--ink); outline-offset: 1px; }
+.sheet-hint { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+/* ---------- Results ---------- */
+.results { margin-top: 48px; padding-top: 28px; border-top: 2px solid var(--ink); }
+.results[hidden] { display: none; }
+.results h2 { font-family: var(--display); font-weight: 800; font-size: clamp(24px, 3vw, 34px); letter-spacing: -0.02em; line-height: 1.1; max-width: 30ch; }
+.results .sub { color: var(--muted); margin-top: 6px; max-width: 70ch; }
+.metrics { margin-top: 22px; display: grid; gap: 14px; max-width: 880px; }
+.metric { display: grid; grid-template-columns: 170px 1fr; gap: 6px 16px; align-items: center; }
+.metric h3 { font-size: 14px; font-weight: 600; }
+.metric .rows { display: grid; gap: 5px; }
+.mrow { display: grid; grid-template-columns: 1fr 96px; gap: 10px; align-items: center; }
+.mrow .track { height: 14px; background: var(--line); border-radius: 7px; overflow: hidden; }
+.mrow .fill { height: 100%; border-radius: 7px; }
+.mrow.a .fill { background: var(--a); } .mrow.b .fill { background: var(--b); }
+.mrow .val { font-variant-numeric: tabular-nums; font-weight: 600; font-size: 14px; }
+.mrow.best .val::after { content: ' ✓'; color: var(--ok); }
+.legend { display: flex; gap: 18px; margin-top: 16px; font-size: 13px; font-weight: 600; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
+.block { margin-top: 36px; }
+.block h3 { font-family: var(--display); font-size: 20px; font-weight: 800; letter-spacing: -0.01em; }
+.block .note { color: var(--muted); font-size: 13px; margin-top: 4px; }
+.diffs { margin-top: 12px; display: grid; gap: 10px; }
+.diff { background: var(--sheet); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+.diff p { font-weight: 500; margin-bottom: 8px; max-width: 80ch; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; font-size: 13px; }
+.chip { padding: 3px 10px; border-radius: 999px; border: 1.5px solid var(--line); font-weight: 600; }
+.chip.ok { border-color: var(--ok); background: var(--ok-soft); color: var(--ok); }
+.chip.bad { border-color: var(--bad); background: var(--bad-soft); color: var(--bad); }
+.tablewrap { overflow-x: auto; margin-top: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--sheet); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { background: var(--paper); font-weight: 600; font-size: 13px; white-space: nowrap; }
+td.c { text-align: center; font-weight: 700; white-space: nowrap; }
+td.ok { color: var(--ok); background: var(--ok-soft); } td.bad { color: var(--bad); background: var(--bad-soft); } td.err { color: var(--warn); }
+tr:last-child td { border-bottom: 0; }
+.actions { display: flex; gap: 12px; margin-top: 28px; flex-wrap: wrap; }
+.foot { margin-top: 18px; font-size: 12px; color: var(--muted); max-width: 80ch; }
+
+@media (max-width: 960px) {
+  .arena { grid-template-columns: 1fr; }
+  .side, .side[data-side="b"] { padding: 0; border-left: 0; }
+  .side[data-side="b"] { margin-top: 32px; padding-top: 24px; border-top: 2px solid var(--ink); }
+  .metric { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .sheet { grid-template-columns: repeat(6, 1fr); }
+  .s-head { flex-direction: column; }
+  .score { text-align: left; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
 </head>
 <body>
-
-  <!-- Top Navigation -->
-  <div class="top-nav">
-    <div class="brand">
-      <div class="brand-icon">QA</div>
-      <span>Hệ Thống Đánh Giá CCHC Năm 2026</span>
+<div class="page">
+  <header class="top">
+    <div>
+      <h1>Hai model, cùng một đề thi CCHC</h1>
+      <p>30 câu trắc nghiệm trích từ Quyết định 1963/QĐ-UBND và Kế hoạch 244/KH-UBND. Mỗi bên là một model chạy cục bộ trên Ollama, tự tra tài liệu và điền phiếu trả lời.</p>
     </div>
-
-    <div class="controls-group">
-      <label class="toggle-label" title="Tự động hiển thị đáp án đúng sau khi chọn">
-        <input type="checkbox" id="toggleReveal" checked style="display:none;">
-        <span class="toggle-switch"></span>
-        <span>Trực quan hóa đáp án đúng</span>
-      </label>
-      <button class="btn btn-secondary" id="btnRevealNow" style="padding: 6px 14px; font-size: 12px;">
-        👁️ Xem đáp án
-      </button>
-    </div>
-  </div>
-
-  <div class="container">
-    <div class="main-column">
-      <!-- Question Navigator Bar -->
-      <div class="nav-pagination" id="paginationBar">
-        <!-- Rendered by JS: [1] [2] [3] [4] [5] -->
+    <div class="controls">
+      <div class="seg" role="radiogroup" aria-label="Cách chạy">
+        <label><input type="radio" name="mode" value="sequential" checked><span>Lần lượt</span></label>
+        <label><input type="radio" name="mode" value="parallel"><span>Song song</span></label>
       </div>
-
-      <!-- Quiz Card -->
-      <div class="quiz-card">
-        <div class="quiz-header">
-          <div class="badges">
-            <span class="badge badge-primary" id="questionNumberBadge">Câu 1 / 5</span>
-            <span class="badge badge-doc" id="docSourceBadge">1963/QĐ-UBND</span>
-          </div>
-          <span class="timer-text">Thời gian làm bài: 14:10</span>
-        </div>
-
-        <div class="question-text question-title" id="questionTitle">
-          <!-- Nội dung câu hỏi -->
-        </div>
-
-        <div class="options-group answers-list" id="optionsGroup">
-          <!-- Các phương án trả lời -->
-        </div>
-
-        <!-- Thẻ Căn Cứ Pháp Lý & Ngữ Cảnh RAG -->
-        <div class="explanation-card" id="explanationCard">
-          <div class="explanation-header">
-            <div class="explanation-title">
-              <span>⚖️ Căn cứ pháp lý & Ngữ cảnh trích xuất (RAG Match)</span>
-            </div>
-            <span class="citation-source" id="citationSource">244/KH-UBND</span>
-          </div>
-
-          <div class="citation-quote" id="citationQuote">
-            <!-- Đoạn trích dẫn -->
-          </div>
-
-          <div class="citation-meta">
-            <div class="meta-tag">Độ tin cậy: <strong id="citationConf">98.5% (High)</strong></div>
-            <div class="meta-tag">Truy xuất: <strong id="citationMethod">In-memory BM25</strong></div>
-            <div class="meta-tag">Độ trễ: <strong id="citationLatency">0.18ms</strong></div>
-          </div>
-        </div>
-
-        <!-- Nút điều hướng câu hỏi -->
-        <div class="actions">
-          <button class="btn btn-secondary" id="btnPrev" disabled>
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-            <span>Câu trước</span>
-          </button>
-
-          <div style="display: flex; gap: 10px;">
-            <button class="btn btn-primary" id="btnNext">
-              <span>Câu tiếp theo</span>
-              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </button>
-            <button class="btn btn-submit-exam" id="btnSubmit" style="display: none;">
-              <span>Nộp bài thi</span>
-              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
-            </button>
-          </div>
-        </div>
+      <div class="seg" role="radiogroup" aria-label="Nhịp trả lời">
+        <label><input type="radio" name="pace" value="fast" checked><span>Nhanh</span></label>
+        <label><input type="radio" name="pace" value="human"><span>Nhịp người (3–6 s/câu)</span></label>
       </div>
+      <button class="btn" id="startBtn" type="button">Bắt đầu</button>
+      <button class="btn ghost" id="resetBtn" type="button">Làm lại</button>
+      <span class="status" id="status">Đang kiểm tra server…</span>
     </div>
+  </header>
 
-    <!-- Telemetry Sidebar -->
-    <div class="telemetry-card">
-      <div class="telemetry-title">
-        <span>Behavioral Telemetry</span>
-        <span class="telemetry-counter" id="eventCount">0 sự kiện</span>
-      </div>
-      <div class="telemetry-log" id="telemetryLog">
-        <div style="color: var(--text-muted);">Đang theo dõi chuỗi sự kiện người dùng & Agent...</div>
-      </div>
-    </div>
-  </div>
+  <p class="modehint">Lần lượt chạy bên trái xong rồi mới chạy bên phải, nên thời gian đo được chính xác. Song song cho cả hai chạy cùng lúc nhưng sẽ chậm nếu hai model không vừa bộ nhớ GPU.</p>
+  <div class="banner" id="banner" hidden></div>
 
-  <!-- Score Modal -->
-  <div class="modal-overlay" id="scoreModal">
-    <div class="modal-content">
-      <div class="score-circle" id="scoreValue">5/5</div>
-      <h2 style="margin-bottom: 8px; color: #fff;">Hoàn Thành Bài Thi Xuất Sắc!</h2>
-      <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 24px;" id="scoreSummary">
-        Hệ thống QA Agent đã tự động suy luận chính xác 5/5 câu hỏi từ tài liệu tham chiếu 1963/QĐ-UBND và 244/KH-UBND.
-      </p>
-      <button class="btn btn-primary" id="btnRestartQuiz" style="margin: 0 auto;">Làm lại bài thi</button>
-    </div>
-  </div>
+  <main class="arena" id="arena"></main>
 
-  <script>
-    // BỘ ĐỀ THI 5 CÂU HỎI TRÍCH XUẤT TỪ 2 VĂN BẢN QUY PHẠM THỰC TẾ
-    const QUIZ_DATA = [
+  <section class="results" id="results" hidden aria-live="polite"></section>
+</div>
+
+<script>
+const QUIZ = [
+  {
+    "id": "q1",
+    "doc": "1963",
+    "question": "Theo Quyết định số 1963/QĐ-UBND ngày 06/5/2026 của UBND thành phố Đà Nẵng, ai là người ký thay Chủ tịch (KT. Chủ tịch)?",
+    "options": [
       {
-        id: "q1",
-        docSource: "1963/QĐ-UBND (Đà Nẵng)",
-        question: "Theo Quyết định số 1963/QĐ-UBND ngày 06/5/2026 của UBND thành phố Đà Nẵng, ai là người ký thay Chủ tịch (KT. Chủ tịch)?",
-        correctKey: "A",
-        options: [
-          { key: "A", text: "Phó Chủ tịch Hồ Quang Bửu" },
-          { key: "B", text: "Giám đốc Sở Nội vụ thành phố" },
-          { key: "C", text: "Chánh Văn phòng UBND thành phố" },
-          { key: "D", text: "Chủ tịch Hội đồng nhân dân thành phố" }
-        ],
-        citation: {
-          source: "1963/QĐ-UBND > Trang 2 > Nơi nhận",
-          quote: "KT. CHỦ TỊCH / PHÓ CHỦ TỊCH / [Chữ ký và con dấu đỏ của UBND thành phố Đà Nẵng] / Hồ Quang Bửu."
-        }
+        "key": "A",
+        "text": "Phó Chủ tịch Hồ Quang Bửu"
       },
       {
-        id: "q2",
-        docSource: "1963/QĐ-UBND (Đà Nẵng)",
-        question: "Theo Kế hoạch số 1963/QĐ-UBND, công tác thông tin, tuyên truyền CCHC năm 2026 phải quán triệt nguyên tắc lấy đối tượng nào làm 'trung tâm, chủ thể, mục tiêu và động lực của CCHC'?",
-        correctKey: "B",
-        options: [
-          { key: "A", text: "Doanh nghiệp nhà nước và cơ quan báo chí địa phương" },
-          { key: "B", text: "Người dân, doanh nghiệp" },
-          { key: "C", text: "Đội ngũ cán bộ quản lý cấp thành phố" },
-          { key: "D", text: "Các tổ chức tài chính và nhà đầu tư nước ngoài" }
-        ],
-        citation: {
-          source: "1963/QĐ-UBND > Kế hoạch > Mục I.2.a",
-          quote: "Công tác thông tin, tuyên truyền CCHC phải quán triệt nguyên tắc 'lấy người dân, doanh nghiệp làm trung tâm, chủ thể, mục tiêu và động lực của CCHC', gắn với nâng cao chất lượng cung ứng dịch vụ công..."
-        }
+        "key": "B",
+        "text": "Giám đốc Sở Nội vụ thành phố"
       },
       {
-        id: "q3",
-        docSource: "244/KH-UBND (Đại Lộc)",
-        question: "Theo Kế hoạch số 244/KH-UBND ngày 07/8/2026 của UBND xã Đại Lộc, công tác tuyên truyền CCHC được đưa vào hoạt động thường xuyên trên kênh thông tin nào?",
-        correctKey: "A",
-        options: [
-          { key: "A", text: "Trang Thông tin Đại Lộc" },
-          { key: "B", text: "Kênh truyền hình VTV1 Quốc gia" },
-          { key: "C", text: "Tạp chí Nghiên cứu Lập pháp" },
-          { key: "D", text: "Bản tin nội bộ của Bộ Nội vụ" }
-        ],
-        citation: {
-          source: "244/KH-UBND > Mục I.1.a",
-          quote: "...đưa tuyên truyền CCHC vào hoạt động thường xuyên trên Trang Thông tin Đại Lộc. Qua đó, góp phần giúp người dân, doanh nghiệp dễ tiếp cận thông tin..."
-        }
+        "key": "C",
+        "text": "Chánh Văn phòng UBND thành phố"
       },
       {
-        id: "q4",
-        docSource: "1963/QĐ-UBND (Đà Nẵng)",
-        question: "Theo Kế hoạch kèm Quyết định số 1963/QĐ-UBND, yêu cầu đối với các cơ quan, đơn vị về việc sản xuất video clip tuyên truyền CCHC trong năm là gì?",
-        correctKey: "A",
-        options: [
-          { key: "A", text: "100% các đơn vị thực hiện ít nhất 01 video clip truyền tải thông điệp về CCHC trong năm" },
-          { key: "B", text: "Mỗi quý phát hành ít nhất 05 video phóng sự chuyên sâu" },
-          { key: "C", text: "Chỉ có Đài Phát thanh - Truyền hình Đà Nẵng chịu trách nhiệm làm video clip" },
-          { key: "D", text: "Không bắt buộc sản xuất video clip, chỉ đăng bài viết trên mạng xã hội" }
-        ],
-        citation: {
-          source: "1963/QĐ-UBND > Mục III.2.a",
-          quote: "100% các đơn vị thực hiện ít nhất 01 video clip truyền tải thông điệp về CCHC trong năm."
-        }
+        "key": "D",
+        "text": "Chủ tịch Hội đồng nhân dân thành phố"
+      }
+    ],
+    "expected": "A"
+  },
+  {
+    "id": "q2",
+    "doc": "1963",
+    "question": "Theo Kế hoạch số 1963/QĐ-UBND, công tác thông tin, tuyên truyền CCHC năm 2026 phải quán triệt nguyên tắc lấy đối tượng nào làm 'trung tâm, chủ thể, mục tiêu và động lực của CCHC'?",
+    "options": [
+      {
+        "key": "A",
+        "text": "Doanh nghiệp nhà nước và cơ quan báo chí địa phương"
       },
       {
-        id: "q5",
-        docSource: "244/KH-UBND (Đại Lộc)",
-        question: "Mục tiêu chung của Kế hoạch số 244/KH-UBND ngày 07/8/2026 trên địa bàn xã Đại Lộc nhằm nâng cao nhận thức và sự đồng thuận của ai?",
-        correctKey: "A",
-        options: [
-          { key: "A", text: "Cán bộ quản lý, cán bộ, công chức, viên chức xã và người dân, tổ chức, xã hội" },
-          { key: "B", text: "Cắt giảm 50% số lượng cán bộ cấp xã trong năm 2026" },
-          { key: "C", text: "Dừng toàn bộ việc tiếp nhận và xử lý thủ tục hành chính trực tiếp" },
-          { key: "D", text: "Xóa bỏ hoàn toàn hệ thống loa truyền thanh cơ sở" }
-        ],
-        citation: {
-          source: "244/KH-UBND > Mục I.1.a",
-          quote: "Tăng cường công tác thông tin, tuyên truyền nhằm nâng cao nhận thức, trách nhiệm tổ chức thực hiện CCHC của cán bộ quản lý, cán bộ, công chức, viên chức xã... Đồng thời, nâng cao nhận thức, sự đồng thuận của người dân, tổ chức, xã hội..."
-        }
+        "key": "B",
+        "text": "Người dân, doanh nghiệp"
+      },
+      {
+        "key": "C",
+        "text": "Đội ngũ cán bộ quản lý cấp thành phố"
+      },
+      {
+        "key": "D",
+        "text": "Các tổ chức tài chính và nhà đầu tư nước ngoài"
       }
-    ];
+    ],
+    "expected": "B"
+  },
+  {
+    "id": "q3",
+    "doc": "244",
+    "question": "Theo Kế hoạch số 244/KH-UBND ngày 07/8/2026 của UBND xã Đại Lộc, công tác tuyên truyền CCHC được đưa vào hoạt động thường xuyên trên kênh thông tin nào?",
+    "options": [
+      {
+        "key": "A",
+        "text": "Trang Thông tin Đại Lộc"
+      },
+      {
+        "key": "B",
+        "text": "Kênh truyền hình VTV1 Quốc gia"
+      },
+      {
+        "key": "C",
+        "text": "Tạp chí Nghiên cứu Lập pháp"
+      },
+      {
+        "key": "D",
+        "text": "Bản tin nội bộ của Bộ Nội vụ"
+      }
+    ],
+    "expected": "A"
+  },
+  {
+    "id": "q4",
+    "doc": "1963",
+    "question": "Theo Kế hoạch kèm Quyết định số 1963/QĐ-UBND, yêu cầu đối với các cơ quan, đơn vị về việc sản xuất video clip tuyên truyền CCHC trong năm là gì?",
+    "options": [
+      {
+        "key": "A",
+        "text": "100% các đơn vị thực hiện ít nhất 01 video clip truyền tải thông điệp về CCHC trong năm"
+      },
+      {
+        "key": "B",
+        "text": "Mỗi quý phát hành ít nhất 05 video phóng sự chuyên sâu"
+      },
+      {
+        "key": "C",
+        "text": "Chỉ có Đài Phát thanh - Truyền hình Đà Nẵng chịu trách nhiệm làm video clip"
+      },
+      {
+        "key": "D",
+        "text": "Không bắt buộc sản xuất video clip, chỉ đăng bài viết trên mạng xã hội"
+      }
+    ],
+    "expected": "A"
+  },
+  {
+    "id": "q5",
+    "doc": "244",
+    "question": "Mục tiêu chung của Kế hoạch số 244/KH-UBND ngày 07/8/2026 trên địa bàn xã Đại Lộc nhằm nâng cao nhận thức và sự đồng thuận của ai?",
+    "options": [
+      {
+        "key": "A",
+        "text": "Cán bộ quản lý, cán bộ, công chức, viên chức xã và người dân, tổ chức, xã hội"
+      },
+      {
+        "key": "B",
+        "text": "Cắt giảm 50% số lượng cán bộ cấp xã trong năm 2026"
+      },
+      {
+        "key": "C",
+        "text": "Dừng toàn bộ việc tiếp nhận và xử lý thủ tục hành chính trực tiếp"
+      },
+      {
+        "key": "D",
+        "text": "Xóa bỏ hoàn toàn hệ thống loa truyền thanh cơ sở"
+      }
+    ],
+    "expected": "A"
+  },
+  {
+    "id": "n01",
+    "doc": "1963",
+    "question": "Theo Kế hoạch kèm Quyết định 1963/QĐ-UBND, báo cáo 6 tháng của các sở, ban, ngành, UBND các xã, phường, đặc khu phải hoàn thành chậm nhất vào ngày nào?",
+    "options": [
+      {
+        "key": "A",
+        "text": "Ngày 28/5 hằng năm"
+      },
+      {
+        "key": "B",
+        "text": "Ngày 01/12 hằng năm"
+      },
+      {
+        "key": "C",
+        "text": "Ngày 01/6 hằng năm"
+      },
+      {
+        "key": "D",
+        "text": "Ngày 30/6 hằng năm"
+      }
+    ],
+    "expected": "C"
+  },
+  {
+    "id": "n02",
+    "doc": "244",
+    "question": "Theo Kế hoạch số 244/KH-UBND của UBND xã Đại Lộc, báo cáo 6 tháng của các cơ quan, đơn vị phải hoàn thành chậm nhất vào ngày nào?",
+    "options": [
+      {
+        "key": "A",
+        "text": "Ngày 01/6 hằng năm"
+      },
+      {
+        "key": "B",
+        "text": "Ngày 28/5 hằng năm"
+      },
+      {
+        "key": "C",
+        "text": "Ngày 28/11 hằng năm"
+      },
+      {
+        "key": "D",
+        "text": "Ngày 15/6 hằng năm"
+      }
+    ],
+    "expected": "B"
+  },
+  {
+    "id": "n03",
+    "doc": "1963",
+    "question": "Theo Kế hoạch kèm Quyết định 1963/QĐ-UBND, báo cáo năm của các sở, ban, ngành, UBND các xã, phường, đặc khu phải hoàn thành chậm nhất vào ngày nào?",
+    "options": [
+      {
+        "key": "A",
+        "text": "Ngày 28/11 hằng năm"
+      },
+      {
+        "key": "B",
+        "text": "Ngày 01/6 hằng năm"
+      },
+      {
+        "key": "C",
+        "text": "Ngày 31/12 hằng năm"
+      },
+      {
+        "key": "D",
+        "text": "Ngày 01/12 hằng năm"
+      }
+    ],
+    "expected": "D"
+  },
+  {
+    "id": "n04",
+    "doc": "244",
+    "question": "Theo Kế hoạch số 244/KH-UBND của UBND xã Đại Lộc, báo cáo năm của các cơ quan, đơn vị phải hoàn thành chậm nhất vào ngày nào?",
+    "options": [
+      {
+        "key": "A",
+        "text": "Ngày 28/11 hằng năm"
+      },
+      {
+        "key": "B",
+        "text": "Ngày 01/12 hằng năm"
+      },
+      {
+        "key": "C",
+        "text": "Ngày 28/5 hằng năm"
+      },
+      {
+        "key": "D",
+        "text": "Ngày 31/12 hằng năm"
+      }
+    ],
+    "expected": "A"
+  },
+  {
+    "id": "n05",
+    "doc": "1963",
+    "question": "Theo Kế hoạch kèm Quyết định 1963/QĐ-UBND, cơ quan nào là cơ quan Thường trực CCHC của thành phố?",
+    "options": [
+      {
+        "key": "A",
+        "text": "Sở Văn hóa, Thể thao và Du lịch"
+      },
+      {
+        "key": "B",
+        "text": "Sở Nội vụ"
+      },
+      {
+        "key": "C",
+        "text": "Văn phòng UBND thành phố"
+      },
+      {
+        "key": "D",
+        "text": "Sở Tài chính"
+      }
+    ],
+    "expected": "B"
+  },
+  {
+    "id": "n06",
+    "doc": "244",
+    "question": "Theo Kế hoạch số 244/KH-UBND, cơ quan nào được xác định là cơ quan Thường trực CCHC của xã Đại Lộc?",
+    "options": [
+      {
+        "key": "A",
+        "text": "Phòng Kinh tế"
+      },
+      {
+        "key": "B",
+        "text": "Trung tâm Phục vụ hành chính công xã"
+      },
+      {
+        "key": "C",
+        "text": "Phòng Văn hoá – Xã hội xã"
+      },
+      {
+        "key": "D",
+        "text": "Sở Nội vụ"
+      }
+    ],
+    "expected": "C"
+  },
+  {
+    "id": "n07",
+    "doc": "1963",
+    "question": "Theo Kế hoạch kèm Quyết định 1963/QĐ-UBND, đơn vị nào chủ trì tham mưu phương án kinh phí thực hiện công tác tuyên truyền CCHC trên địa bàn thành phố?",
+    "options": [
+      {
+        "key": "A",
+        "text": "Sở Tài chính"
+      },
+      {
+        "key": "B",
+        "text": "Sở Nội vụ"
+      },
+      {
+        "key": "C",
+        "text": "Sở Khoa học và Công nghệ"
+      },
+      {
+        "key": "D",
+        "text": "Văn phòng UBND thành phố"
+      }
+    ],
+    "expected": "A"
+  },
+  {
+    "id": "n08",
+    "doc": "244",
+    "question": "Theo Kế hoạch số 244/KH-UBND, đơn vị nào chủ trì tham mưu phương án kinh phí thực hiện công tác tuyên truyền CCHC trên địa bàn xã?",
+    "options": [
+      {
+        "key": "A",
+        "text": "Sở Tài chính"
+      },
+      {
+        "key": "B",
+        "text": "Phòng Văn hoá – Xã hội xã"
+      },
+      {
+        "key": "C",
+        "text": "Trung tâm Cung ứng dịch vụ sự nghiệp công xã"
+      },
+      {
+        "key": "D",
+        "text": "Phòng Kinh tế"
+      }
+    ],
+    "expected": "D"
+  },
+  {
+    "id": "n09",
+    "doc": "1963",
+    "question": "Theo Kế hoạch kèm Quyết định 1963/QĐ-UBND, đơn vị nào chủ trì tổ chức triển khai truyền thông khoa học công nghệ, đổi mới sáng tạo và chuyển đổi số trên địa bàn thành phố?",
+    "options": [
+      {
+        "key": "A",
+        "text": "Sở Nội vụ"
+      },
+      {
+        "key": "B",
+        "text": "Sở Khoa học và Công nghệ"
+      },
+      {
+        "key": "C",
+        "text": "Sở Tài chính"
+      },
+      {
+        "key": "D",
+        "text": "Sở Văn hóa, Thể thao và Du lịch"
+      }
+    ],
+    "expected": "B"
+  },
+  {
+    "id": "n10",
+    "doc": "244",
+    "question": "Theo Kế hoạch số 244/KH-UBND, đơn vị nào chủ trì tổ chức triển khai truyền thông khoa học công nghệ, đổi mới sáng tạo và chuyển đổi số?",
+    "options": [
+      {
+        "key": "A",
+        "text": "Phòng Văn hoá – Xã hội xã"
+      },
+      {
+        "key": "B",
+        "text": "Phòng Kinh tế"
+      },
+      {
+        "key": "C",
+        "text": "Sở Khoa học và Công nghệ"
+      },
+      {
+        "key": "D",
+        "text": "Trung tâm Phục vụ hành chính công xã"
+      }
+    ],
+    "expected": "A"
+  },
+  {
+    "id": "n11",
+    "doc": "1963",
+    "question": "Theo Kế hoạch kèm Quyết định 1963/QĐ-UBND, hệ thống khảo sát hài lòng trực tuyến người dân, doanh nghiệp của thành phố có địa chỉ nào?",
+    "options": [
+      {
+        "key": "A",
+        "text": "https://danang.gov.vn/khaosat"
+      },
+      {
+        "key": "B",
+        "text": "https://dichvucong.gov.vn"
+      },
+      {
+        "key": "C",
+        "text": "https://khaosathailong.danang.gov.vn"
+      },
+      {
+        "key": "D",
+        "text": "https://sinhvien.danang.edu.vn"
+      }
+    ],
+    "expected": "C"
+  },
+  {
+    "id": "n12",
+    "doc": "1963",
+    "question": "Theo Kế hoạch kèm Quyết định 1963/QĐ-UBND, yêu cầu về báo cáo kết quả khảo sát hài lòng trực tuyến của các đơn vị là gì?",
+    "options": [
+      {
+        "key": "A",
+        "text": "Báo cáo hằng tháng gửi riêng cho Bộ Nội vụ"
+      },
+      {
+        "key": "B",
+        "text": "Chỉ báo cáo một lần vào cuối năm"
+      },
+      {
+        "key": "C",
+        "text": "Không yêu cầu báo cáo kết quả khảo sát"
+      },
+      {
+        "key": "D",
+        "text": "100% đơn vị có báo cáo kết quả khảo sát trực tuyến hàng quý lồng ghép trong báo cáo CCHC định kỳ"
+      }
+    ],
+    "expected": "D"
+  },
+  {
+    "id": "n13",
+    "doc": "1963",
+    "question": "Theo Kế hoạch kèm Quyết định 1963/QĐ-UBND, yêu cầu đối với hoạt động tuyên truyền trên các phương tiện thông tin đại chúng là gì?",
+    "options": [
+      {
+        "key": "A",
+        "text": "100% các đơn vị thực hiện ít nhất 01 tin bài/tháng về nội dung tuyên truyền CCHC"
+      },
+      {
+        "key": "B",
+        "text": "Mỗi đơn vị đăng ít nhất 10 tin bài/tháng"
+      },
+      {
+        "key": "C",
+        "text": "Chỉ cần 01 tin bài/năm trên báo in"
+      },
+      {
+        "key": "D",
+        "text": "Chỉ Báo và Phát thanh - Truyền hình Đà Nẵng được đăng tin"
+      }
+    ],
+    "expected": "A"
+  },
+  {
+    "id": "n14",
+    "doc": "244",
+    "question": "Theo Kế hoạch số 244/KH-UBND, tin bài tuyên truyền CCHC trong hoạt động trên phương tiện thông tin đại chúng được đăng trên những kênh nào của xã?",
+    "options": [
+      {
+        "key": "A",
+        "text": "Cổng Thông tin điện tử thành phố và Báo Đà Nẵng"
+      },
+      {
+        "key": "B",
+        "text": "Loa truyền thanh hoặc Trang Thông tin Đại Lộc, các ứng dụng mạng xã hội"
+      },
+      {
+        "key": "C",
+        "text": "Chỉ trên truyền hình quốc gia VTV"
+      },
+      {
+        "key": "D",
+        "text": "Chỉ trên bảng tin niêm yết tại trụ sở xã"
+      }
+    ],
+    "expected": "B"
+  },
+  {
+    "id": "n15",
+    "doc": "1963",
+    "question": "Theo Kế hoạch kèm Quyết định 1963/QĐ-UBND, yêu cầu đối với việc tổ chức hội nghị, tập huấn chuyên đề về CCHC của các cơ quan, đơn vị trong năm là gì?",
+    "options": [
+      {
+        "key": "A",
+        "text": "Mỗi quý tổ chức ít nhất 01 hội nghị"
+      },
+      {
+        "key": "B",
+        "text": "Chỉ tổ chức khi có yêu cầu của Bộ Nội vụ"
+      },
+      {
+        "key": "C",
+        "text": "100% các cơ quan, đơn vị tổ chức ít nhất 01 hội nghị, tập huấn chuyên đề trong năm"
+      },
+      {
+        "key": "D",
+        "text": "Không bắt buộc tổ chức hội nghị"
+      }
+    ],
+    "expected": "C"
+  },
+  {
+    "id": "n16",
+    "doc": "1963",
+    "question": "Theo Kế hoạch kèm Quyết định 1963/QĐ-UBND, tỷ lệ cán bộ, công chức, viên chức tham gia lớp tập huấn chuyên đề do thành phố hoặc đơn vị tổ chức được yêu cầu là bao nhiêu?",
+    "options": [
+      {
+        "key": "A",
+        "text": "50% CBCCVC tham gia ít nhất 01 lớp"
+      },
+      {
+        "key": "B",
+        "text": "100% CBCCVC tham gia ít nhất 01 lớp"
+      },
+      {
+        "key": "C",
+        "text": "100% CBCCVC tham gia ít nhất 05 lớp"
+      },
+      {
+        "key": "D",
+        "text": "Chỉ lãnh đạo cơ quan tham gia"
+      }
+    ],
+    "expected": "B"
+  },
+  {
+    "id": "n17",
+    "doc": "244",
+    "question": "Theo Kế hoạch số 244/KH-UBND, những người ký ban hành kế hoạch là ai?",
+    "options": [
+      {
+        "key": "A",
+        "text": "Phó Chủ tịch Nguyễn Thị Thanh Nhàng, ký thay Chủ tịch UBND xã"
+      },
+      {
+        "key": "B",
+        "text": "Phó Chủ tịch Hồ Quang Bửu, ký thay Chủ tịch UBND thành phố"
+      },
+      {
+        "key": "C",
+        "text": "Chánh Văn phòng UBND xã"
+      },
+      {
+        "key": "D",
+        "text": "Trưởng Phòng Văn hoá – Xã hội xã"
+      }
+    ],
+    "expected": "A"
+  },
+  {
+    "id": "n18",
+    "doc": "1963",
+    "question": "Quyết định 1963/QĐ-UBND ban hành vào ngày nào?",
+    "options": [
+      {
+        "key": "A",
+        "text": "Ngày 07 tháng 8 năm 2026"
+      },
+      {
+        "key": "B",
+        "text": "Ngày 16 tháng 12 năm 2025"
+      },
+      {
+        "key": "C",
+        "text": "Ngày 29 tháng 4 năm 2026"
+      },
+      {
+        "key": "D",
+        "text": "Ngày 06 tháng 5 năm 2026"
+      }
+    ],
+    "expected": "D"
+  },
+  {
+    "id": "n19",
+    "doc": "244",
+    "question": "Kế hoạch số 244/KH-UBND của UBND xã Đại Lộc ban hành vào ngày nào?",
+    "options": [
+      {
+        "key": "A",
+        "text": "Ngày 06 tháng 5 năm 2026"
+      },
+      {
+        "key": "B",
+        "text": "Ngày 07 tháng 8 năm 2026"
+      },
+      {
+        "key": "C",
+        "text": "Ngày 07 tháng 1 năm 2026"
+      },
+      {
+        "key": "D",
+        "text": "Ngày 12 tháng 2 năm 2026"
+      }
+    ],
+    "expected": "B"
+  },
+  {
+    "id": "n20",
+    "doc": "1963",
+    "question": "Quyết định 1963/QĐ-UBND được ban hành theo đề nghị của ai và tại Tờ trình số nào?",
+    "options": [
+      {
+        "key": "A",
+        "text": "Chánh Văn phòng UBND thành phố, Tờ trình số 367/QĐ-BNV"
+      },
+      {
+        "key": "B",
+        "text": "Giám đốc Sở Tài chính, Tờ trình số 2994/QĐ-UBND"
+      },
+      {
+        "key": "C",
+        "text": "Giám đốc Sở Nội vụ thành phố Đà Nẵng, Tờ trình số 3798/TTr-SNV"
+      },
+      {
+        "key": "D",
+        "text": "Bộ trưởng Bộ Nội vụ, Tờ trình số 892/QĐ-BNV"
+      }
+    ],
+    "expected": "C"
+  },
+  {
+    "id": "n21",
+    "doc": "1963",
+    "question": "Theo Điều 2 Quyết định 1963/QĐ-UBND, quyết định có hiệu lực thi hành từ thời điểm nào?",
+    "options": [
+      {
+        "key": "A",
+        "text": "Kể từ ngày ban hành"
+      },
+      {
+        "key": "B",
+        "text": "Kể từ ngày 01/01/2027"
+      },
+      {
+        "key": "C",
+        "text": "Sau 30 ngày kể từ ngày ký"
+      },
+      {
+        "key": "D",
+        "text": "Kể từ ngày đăng Công báo"
+      }
+    ],
+    "expected": "A"
+  },
+  {
+    "id": "n22",
+    "doc": "244",
+    "question": "Theo Kế hoạch số 244/KH-UBND, 100% cơ quan, đơn vị thuộc UBND xã phải thực hiện ít nhất bao nhiêu video clip truyền tải thông điệp về CCHC trong năm?",
+    "options": [
+      {
+        "key": "A",
+        "text": "02 video clip"
+      },
+      {
+        "key": "B",
+        "text": "05 video clip"
+      },
+      {
+        "key": "C",
+        "text": "01 video clip"
+      },
+      {
+        "key": "D",
+        "text": "Không yêu cầu video clip"
+      }
+    ],
+    "expected": "C"
+  },
+  {
+    "id": "n23",
+    "doc": "244",
+    "question": "Theo Kế hoạch số 244/KH-UBND, mô hình hỗ trợ dịch vụ công trực tuyến được đặt ở đâu?",
+    "options": [
+      {
+        "key": "A",
+        "text": "Tại các khu dân cư"
+      },
+      {
+        "key": "B",
+        "text": "Tại các trường học"
+      },
+      {
+        "key": "C",
+        "text": "Tại Sở Nội vụ"
+      },
+      {
+        "key": "D",
+        "text": "Tại các thôn"
+      }
+    ],
+    "expected": "D"
+  },
+  {
+    "id": "n24",
+    "doc": "1963",
+    "question": "Theo Kế hoạch kèm Quyết định 1963/QĐ-UBND, ai chủ trì thực hiện tuyên truyền CCHC trên Cổng Thông tin điện tử thành phố và hệ sinh thái mạng xã hội (Fanpage, Youtube, Tiktok, Zalo OA)?",
+    "options": [
+      {
+        "key": "A",
+        "text": "Sở Nội vụ"
+      },
+      {
+        "key": "B",
+        "text": "Văn phòng UBND thành phố"
+      },
+      {
+        "key": "C",
+        "text": "Sở Khoa học và Công nghệ"
+      },
+      {
+        "key": "D",
+        "text": "Sở Tài chính"
+      }
+    ],
+    "expected": "B"
+  },
+  {
+    "id": "n25",
+    "doc": "1963",
+    "question": "Theo Kế hoạch kèm Quyết định 1963/QĐ-UBND, đối tượng của kế hoạch tuyên truyền là ai?",
+    "options": [
+      {
+        "key": "A",
+        "text": "Chỉ cán bộ lãnh đạo cấp sở"
+      },
+      {
+        "key": "B",
+        "text": "Chỉ doanh nghiệp đầu tư nước ngoài"
+      },
+      {
+        "key": "C",
+        "text": "Cán bộ, công chức, viên chức, người lao động trong hệ thống cơ quan hành chính nhà nước từ thành phố đến cơ sở, các tổ chức, đơn vị và mọi tầng lớp Nhân dân"
+      },
+      {
+        "key": "D",
+        "text": "Chỉ học sinh, sinh viên trên địa bàn thành phố"
+      }
+    ],
+    "expected": "C"
+  }
+];
+const API = new URLSearchParams(location.search).get('api') || 'http://127.0.0.1:8000';
+const N = QUIZ.length;
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const fmtMs = ms => ms < 1000 ? Math.round(ms) + ' ms' : (ms / 1000).toLocaleString('vi-VN', { maximumFractionDigits: 1 }) + ' s';
+const fmtPct = x => (x * 100).toLocaleString('vi-VN', { maximumFractionDigits: 0 }) + '%';
 
-    // State
-    let currentIndex = 0;
-    const userAnswers = {}; // { 0: "A", 1: "B", ... }
-    let count = 0;
+const sides = {
+  a: { id: 'a', name: '', res: Array(N).fill(null), cur: -1, view: null, running: false, done: false, t0: 0, t1: 0 },
+  b: { id: 'b', name: '', res: Array(N).fill(null), cur: -1, view: null, running: false, done: false, t0: 0, t1: 0 },
+};
+let runId = 0, busy = false, models = [];
 
-    // Elements
-    const paginationBar = document.getElementById('paginationBar');
-    const questionNumberBadge = document.getElementById('questionNumberBadge');
-    const docSourceBadge = document.getElementById('docSourceBadge');
-    const questionTitle = document.getElementById('questionTitle');
-    const optionsGroup = document.getElementById('optionsGroup');
-    const explanationCard = document.getElementById('explanationCard');
-    const citationSource = document.getElementById('citationSource');
-    const citationQuote = document.getElementById('citationQuote');
-    const citationConf = document.getElementById('citationConf');
-    const citationMethod = document.getElementById('citationMethod');
-    const citationLatency = document.getElementById('citationLatency');
-    const btnPrev = document.getElementById('btnPrev');
-    const btnNext = document.getElementById('btnNext');
-    const btnSubmit = document.getElementById('btnSubmit');
-    const toggleReveal = document.getElementById('toggleReveal');
-    const btnRevealNow = document.getElementById('btnRevealNow');
-    const logContainer = document.getElementById('telemetryLog');
-    const eventCountEl = document.getElementById('eventCount');
-    const scoreModal = document.getElementById('scoreModal');
-    const scoreValue = document.getElementById('scoreValue');
-    const scoreSummary = document.getElementById('scoreSummary');
-    const btnRestartQuiz = document.getElementById('btnRestartQuiz');
+/* ---------- Layout ---------- */
+function shell(id) {
+  const left = id === 'a';
+  return `
+  <section class="side" data-side="${id}" aria-label="Model ${left ? 'bên trái' : 'bên phải'}">
+    <div class="s-head">
+      <div>
+        <label for="model-${id}">Model ${left ? 'bên trái' : 'bên phải'}</label>
+        <select id="model-${id}"></select>
+      </div>
+      <div class="score" aria-live="polite"><span class="n" id="score-${id}">0</span><span class="of">/ ${N}</span></div>
+    </div>
+    <dl class="stats">
+      <div><dt>Đã trả lời</dt><dd id="done-${id}">0</dd></div>
+      <div><dt>Thời gian TB</dt><dd id="avg-${id}">–</dd></div>
+      <div><dt>Độ tin cậy TB</dt><dd id="conf-${id}">–</dd></div>
+      <div><dt>Dùng heuristic</dt><dd id="fb-${id}">0</dd></div>
+    </dl>
+    <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="${N}" id="pbar-${id}"><i id="bar-${id}"></i></div>
+    <article class="card" id="card-${id}"></article>
+    <ol class="sheet" id="sheet-${id}"></ol>
+    <p class="sheet-hint">Bấm vào một ô để xem lại câu đó.</p>
+  </section>`;
+}
 
-    // Khởi tạo Pagination Pills
-    function renderPagination() {
-      paginationBar.innerHTML = '';
-      QUIZ_DATA.forEach((q, idx) => {
-        const btn = document.createElement('button');
-        btn.className = 'page-btn' + (idx === currentIndex ? ' active' : '') + (userAnswers[idx] ? ' answered' : '');
-        btn.innerText = idx + 1;
-        btn.addEventListener('click', () => {
-          currentIndex = idx;
-          renderQuestion();
-        });
-        paginationBar.appendChild(btn);
-      });
+function buildSheet(id) {
+  $('#sheet-' + id).innerHTML = QUIZ.map((q, i) =>
+    `<li><button type="button" class="cell" data-i="${i}" data-side="${id}" aria-label="Câu ${i + 1}"><span class="no">${i + 1}</span><span class="ans"></span></button></li>`
+  ).join('');
+}
+
+/* ---------- Rendering ---------- */
+function renderCard(s) {
+  const el = $('#card-' + s.id);
+  const i = s.view ?? (s.cur >= 0 ? s.cur : null);
+  if (i === null) {
+    el.innerHTML = `<p class="empty">Chọn model cho mỗi bên rồi bấm <b>Bắt đầu</b>. Câu hỏi sẽ hiện ở đây khi model đọc đến.</p>`;
+    return;
+  }
+  const q = QUIZ[i], r = s.res[i];
+  const opts = q.options.map(o => {
+    let cls = '', tag = '';
+    if (r && !r.err) {
+      const chosen = r.key === o.key, right = o.key === q.expected;
+      if (chosen) cls += ' is-chosen';
+      if (right) { cls += ' is-right'; tag = chosen ? 'Chọn đúng' : 'Đáp án đúng'; }
+      else if (chosen) { cls += ' is-wrong'; tag = 'Model chọn'; }
+    } else if (r && r.err && o.key === q.expected) { cls += ' is-right'; tag = 'Đáp án đúng'; }
+    return `<li class="opt${cls}"><span class="bub">${o.key}</span><span>${esc(o.text)}</span><span class="tag">${tag}</span></li>`;
+  }).join('');
+  let foot;
+  if (!r) foot = `<span class="thinking">Đang đọc tài liệu và suy luận</span>`;
+  else if (r.err) foot = `<span class="stamp err">Lỗi</span><span>${esc(r.err)}</span>`;
+  else foot = `<span class="stamp ${r.correct ? 'ok' : 'bad'}">${r.correct ? 'Đúng' : 'Sai'}</span>
+      <span>${fmtMs(r.ms)}</span><span>tin cậy ${fmtPct(r.conf)}</span>
+      ${r.source === 'fallback' ? '<span class="fb">Model không trả lời, đã dùng heuristic</span>' : ''}`;
+  el.innerHTML = `
+    <div class="meta"><span>Câu ${i + 1} / ${N}</span><span>${q.doc === '244' ? 'KH 244/KH-UBND (xã Đại Lộc)' : 'QĐ 1963/QĐ-UBND (Đà Nẵng)'}</span></div>
+    <p class="q">${esc(q.question)}</p>
+    <ul class="opts">${opts}</ul>
+    <div class="verdict">${foot}</div>
+    ${r && r.chunk ? `<details><summary>Đoạn tài liệu model đã đọc</summary><p>${esc(r.chunk)}</p></details>` : ''}`;
+}
+
+function renderSheet(s) {
+  $('#sheet-' + s.id).querySelectorAll('.cell').forEach((c, i) => {
+    const r = s.res[i];
+    let st = 'st-idle', ans = '';
+    if (r && r.err) { st = 'st-err'; ans = '!'; }
+    else if (r) { st = r.correct ? 'st-ok' : 'st-bad'; ans = r.key; }
+    else if (i === s.cur && s.running) st = 'st-run';
+    c.className = 'cell ' + st + (s.view === i ? ' sel' : '');
+    c.querySelector('.ans').textContent = ans;
+    c.title = r && !r.err ? `Câu ${i + 1}: chọn ${r.key}, đáp án đúng ${QUIZ[i].expected}` : `Câu ${i + 1}`;
+  });
+}
+
+function renderStats(s) {
+  const got = s.res.filter(Boolean);
+  const ok = got.filter(r => !r.err);
+  $('#score-' + s.id).textContent = got.filter(r => r.correct).length;
+  $('#done-' + s.id).textContent = `${got.length} / ${N}`;
+  $('#avg-' + s.id).textContent = ok.length ? fmtMs(ok.reduce((a, r) => a + r.ms, 0) / ok.length) : '–';
+  $('#conf-' + s.id).textContent = ok.length ? fmtPct(ok.reduce((a, r) => a + r.conf, 0) / ok.length) : '–';
+  $('#fb-' + s.id).textContent = ok.filter(r => r.source === 'fallback').length;
+  $('#bar-' + s.id).style.width = (got.length / N * 100) + '%';
+  $('#pbar-' + s.id).setAttribute('aria-valuenow', got.length);
+}
+
+const paint = s => { renderStats(s); renderSheet(s); renderCard(s); };
+
+/* ---------- Running ---------- */
+async function ask(q, model) {
+  const t = performance.now();
+  const res = await fetch(API + '/solve', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question: q.question, options: q.options, model }),
+  });
+  if (!res.ok) throw new Error('Server trả lỗi HTTP ' + res.status);
+  const d = await res.json();
+  return { key: d.selected_key, conf: d.confidence, ms: performance.now() - t, source: d.source, chunk: d.matched_chunk, delay: d.suggested_delay_ms };
+}
+
+async function runSide(s, token, pace) {
+  s.running = true; s.t0 = performance.now();
+  for (let i = 0; i < N; i++) {
+    if (token !== runId) return;
+    s.cur = i; if (s.view === null || s.view === i - 1) s.view = null;
+    paint(s);
+    let r;
+    try {
+      r = await ask(QUIZ[i], s.name);
+      r.correct = r.key === QUIZ[i].expected;
+    } catch (e) {
+      r = { err: e.message || 'Không gọi được server', ms: 0 };
     }
+    if (token !== runId) return;
+    s.res[i] = r; paint(s);
+    await sleep(pace === 'human' && !r.err ? Math.min(r.delay || 3000, 6000) : 120);
+  }
+  s.running = false; s.done = true; s.t1 = performance.now(); paint(s);
+}
 
-    // Hiển thị câu hỏi hiện tại
-    function renderQuestion() {
-      const q = QUIZ_DATA[currentIndex];
-      questionNumberBadge.innerText = `Câu ${currentIndex + 1} / ${QUIZ_DATA.length}`;
-      docSourceBadge.innerText = q.docSource;
-      questionTitle.innerText = q.question;
+async function start() {
+  if (busy) return;
+  const mode = document.querySelector('input[name=mode]:checked').value;
+  const pace = document.querySelector('input[name=pace]:checked').value;
+  const alive = await checkServer();
+  if (!alive) return;
+  for (const s of Object.values(sides)) {
+    s.name = $('#model-' + s.id).value;
+    s.res = Array(N).fill(null); s.cur = -1; s.view = null; s.running = false; s.done = false;
+    paint(s);
+  }
+  $('#results').hidden = true;
+  setBusy(true);
+  const token = ++runId;
+  // Nạp sẵn model vào bộ nhớ để lần đầu nạp model không bị tính vào thời gian trả lời
+  $('#startBtn').textContent = 'Đang nạp model…';
+  const names = [...new Set([sides.a.name, sides.b.name])];
+  await Promise.all(names.map(n => ask(QUIZ[0], n).catch(() => null)));
+  try { await fetch(API + '/reload-docs', { method: 'POST' }); } catch (e) { /* xóa cache để đo công bằng */ }
+  if (token !== runId) return;
+  $('#startBtn').textContent = 'Đang chạy…';
+  if (mode === 'parallel') await Promise.all([runSide(sides.a, token, pace), runSide(sides.b, token, pace)]);
+  else { await runSide(sides.a, token, pace); await runSide(sides.b, token, pace); }
+  if (token !== runId) return;
+  setBusy(false);
+  showResults(mode, pace);
+}
 
-      // Render Options
-      optionsGroup.innerHTML = '';
-      q.options.forEach(opt => {
-        const item = document.createElement('label');
-        item.className = 'option-item';
-        item.setAttribute('data-key', opt.key);
-        if (opt.key === q.correctKey) {
-          item.setAttribute('data-is-correct', 'true');
-        }
+function reset() {
+  runId++;
+  for (const s of Object.values(sides)) {
+    s.res = Array(N).fill(null); s.cur = -1; s.view = null; s.running = false; s.done = false; paint(s);
+  }
+  $('#results').hidden = true;
+  setBusy(false);
+}
 
-        const isSelected = userAnswers[currentIndex] === opt.key;
-        if (isSelected) item.classList.add('selected');
+function setBusy(b) {
+  busy = b;
+  $('#startBtn').disabled = b;
+  $('#startBtn').textContent = b ? 'Đang chạy…' : 'Bắt đầu';
+  document.querySelectorAll('select, input[type=radio]').forEach(e => e.disabled = b);
+}
 
-        item.innerHTML = `
-          <input type="radio" name="quiz_opt_${currentIndex}" class="option-radio" value="${opt.key}" ${isSelected ? 'checked' : ''} style="display:none;">
-          <div class="option-indicator">${opt.key}</div>
-          <div class="option-content-wrapper">
-            <span class="option-label">${opt.text}</span>
-          </div>
-          <span class="status-badge badge-correct">✓ ĐÁP ÁN ĐÚNG</span>
-          <span class="status-badge badge-wrong">✗ Chưa chính xác</span>
-        `;
-        optionsGroup.appendChild(item);
-      });
+/* ---------- Results ---------- */
+function summarize(s) {
+  const ok = s.res.filter(r => r && !r.err);
+  return {
+    name: s.name,
+    correct: s.res.filter(r => r && r.correct).length,
+    errors: s.res.filter(r => r && r.err).length,
+    avgMs: ok.length ? ok.reduce((a, r) => a + r.ms, 0) / ok.length : 0,
+    totalMs: s.t1 - s.t0,
+    conf: ok.length ? ok.reduce((a, r) => a + r.conf, 0) / ok.length : 0,
+    fallback: ok.filter(r => r.source === 'fallback').length,
+  };
+}
 
-      // Update Citation
-      citationSource.innerText = q.citation.source;
-      citationQuote.innerText = `“${q.citation.quote}”`;
+function showResults(mode, pace) {
+  const A = summarize(sides.a), B = summarize(sides.b);
+  let verdict, sub;
+  const fast = (x, y) => (y.avgMs / Math.max(x.avgMs, 1)).toLocaleString('vi-VN', { maximumFractionDigits: 1 });
+  if (A.correct !== B.correct) {
+    const w = A.correct > B.correct ? A : B, l = w === A ? B : A;
+    verdict = `${w.name} chính xác hơn: ${w.correct}/${N} so với ${l.correct}/${N}`;
+    sub = w.avgMs > l.avgMs ? `Đổi lại, ${l.name} nhanh hơn khoảng ${fast(l, w)} lần mỗi câu.` : `${w.name} cũng nhanh hơn khoảng ${fast(w, l)} lần mỗi câu.`;
+  } else {
+    const w = A.avgMs <= B.avgMs ? A : B, l = w === A ? B : A;
+    verdict = `Hòa về độ chính xác: cùng đúng ${A.correct}/${N} câu`;
+    sub = `${w.name} nhanh hơn khoảng ${fast(w, l)} lần mỗi câu (${fmtMs(w.avgMs)} so với ${fmtMs(l.avgMs)}).`;
+  }
+  const metrics = [
+    { label: 'Câu trả lời đúng', a: A.correct, b: B.correct, fmt: v => `${v}/${N}`, max: N, better: 'high' },
+    { label: 'Thời gian trung bình mỗi câu', a: A.avgMs, b: B.avgMs, fmt: fmtMs, max: Math.max(A.avgMs, B.avgMs, 1), better: 'low' },
+    { label: 'Tổng thời gian chạy', a: A.totalMs, b: B.totalMs, fmt: v => fmtMs(v), max: Math.max(A.totalMs, B.totalMs, 1), better: 'low' },
+    { label: 'Độ tin cậy trung bình', a: A.conf, b: B.conf, fmt: fmtPct, max: 1, better: 'high' },
+    { label: 'Câu phải dùng heuristic', a: A.fallback, b: B.fallback, fmt: v => v, max: Math.max(A.fallback, B.fallback, 1), better: 'low' },
+  ];
+  const row = (side, v, m, best) =>
+    `<div class="mrow ${side}${best ? ' best' : ''}"><div class="track"><div class="fill" style="width:${Math.max(2, v / m.max * 100)}%"></div></div><span class="val">${m.fmt(v)}</span></div>`;
+  const metricsHtml = metrics.map(m => {
+    const tie = m.a === m.b;
+    const aBest = !tie && (m.better === 'high' ? m.a > m.b : m.a < m.b);
+    const bBest = !tie && !aBest;
+    return `<div class="metric"><h3>${m.label}</h3><div class="rows">${row('a', m.a, m, aBest)}${row('b', m.b, m, bBest)}</div></div>`;
+  }).join('');
 
-      // Check if already answered
-      if (userAnswers[currentIndex] && toggleReveal.checked) {
-        const selectedOpt = optionsGroup.querySelector(`.option-item[data-key="${userAnswers[currentIndex]}"]`);
-        revealAnswers(selectedOpt);
-      } else {
-        explanationCard.classList.remove('visible');
-      }
+  const chip = (r, q) => !r ? `<span class="chip">chưa có</span>` : r.err ? `<span class="chip bad">lỗi</span>` :
+    `<span class="chip ${r.correct ? 'ok' : 'bad'}">${r.key} ${r.correct ? '✓' : '✗'}</span>`;
+  const diffs = QUIZ.map((q, i) => ({ q, i, ra: sides.a.res[i], rb: sides.b.res[i] }))
+    .filter(x => (x.ra && x.ra.key) !== (x.rb && x.rb.key) || (x.ra && !x.ra.correct));
+  const diffHtml = diffs.length ? diffs.map(x => `
+    <div class="diff"><p>Câu ${x.i + 1}. ${esc(x.q.question)}</p>
+      <div class="chips"><span class="chip">Đáp án đúng: ${x.q.expected}</span>
+      <span>${esc(A.name)}</span>${chip(x.ra, x.q)}<span>${esc(B.name)}</span>${chip(x.rb, x.q)}</div></div>`).join('')
+    : `<p class="note">Cả hai model đều đúng ở mọi câu.</p>`;
 
-      // Update Buttons
-      btnPrev.disabled = currentIndex === 0;
-      if (currentIndex === QUIZ_DATA.length - 1) {
-        btnNext.style.display = 'none';
-        btnSubmit.style.display = 'inline-flex';
-      } else {
-        btnNext.style.display = 'inline-flex';
-        btnSubmit.style.display = 'none';
-      }
+  const cell = (r, q) => !r ? '<td class="c">–</td>' : r.err ? '<td class="c err">!</td>' : `<td class="c ${r.correct ? 'ok' : 'bad'}">${r.key}</td>`;
+  const tableHtml = QUIZ.map((q, i) => `<tr><td>${i + 1}</td><td>${esc(q.question)}</td><td class="c">${q.expected}</td>${cell(sides.a.res[i], q)}${cell(sides.b.res[i], q)}</tr>`).join('');
 
-      renderPagination();
-      appendTelemetryLog('NAV_QUESTION', `Câu ${currentIndex + 1}`, `ID: ${q.id}`, 'event-nav');
+  const el = $('#results');
+  el.hidden = false;
+  el.innerHTML = `
+    <h2>${esc(verdict)}</h2>
+    <p class="sub">${esc(sub)}</p>
+    <div class="legend"><span style="color:var(--a)"><i style="background:var(--a)"></i>${esc(A.name)}</span><span style="color:var(--b)"><i style="background:var(--b)"></i>${esc(B.name)}</span></div>
+    <div class="metrics">${metricsHtml}</div>
+    <div class="block"><h3>Những câu hai model khác nhau hoặc sai</h3>
+      <p class="note">Mỗi dòng cho biết đáp án đúng và lựa chọn của từng model.</p>
+      <div class="diffs">${diffHtml}</div></div>
+    <div class="block"><h3>Bảng từng câu</h3>
+      <div class="tablewrap"><table><thead><tr><th>Câu</th><th>Nội dung</th><th>Đúng</th><th style="color:var(--a)">${esc(A.name)}</th><th style="color:var(--b)">${esc(B.name)}</th></tr></thead><tbody>${tableHtml}</tbody></table></div></div>
+    <div class="actions"><button class="btn" id="againBtn" type="button">Chạy lại</button><button class="btn ghost" id="dlBtn" type="button">Tải kết quả (.json)</button></div>
+    <p class="foot">Thời gian là thời gian chờ phía trình duyệt cho mỗi câu, gồm truy xuất tài liệu và suy luận.${mode === 'parallel' ? ' Ở chế độ song song hai model dùng chung máy nên thời gian của cả hai đều chậm hơn khi chạy riêng. Chọn "Lần lượt" để so sánh tốc độ công bằng hơn.' : ''} Bộ 30 câu do nhóm tự soạn từ hai văn bản trong thư mục docs/, nên điểm số chỉ phản ánh bộ đề này.</p>`;
+  $('#againBtn').onclick = () => { window.scrollTo({ top: 0, behavior: 'smooth' }); start(); };
+  $('#dlBtn').onclick = () => {
+    const out = { when: new Date().toISOString(), mode, pace, summary: { a: A, b: B },
+      questions: QUIZ.map((q, i) => ({ id: q.id, expected: q.expected, a: sides.a.res[i], b: sides.b.res[i] })) };
+    const url = URL.createObjectURL(new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' }));
+    const a = document.createElement('a'); a.href = url; a.download = 'ket-qua-so-sanh-model.json'; a.click(); URL.revokeObjectURL(url);
+  };
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ---------- Server & setup ---------- */
+async function checkServer() {
+  const status = $('#status'), banner = $('#banner');
+  try {
+    const m = await (await fetch(API + '/models')).json();
+    models = m.models.length ? m.models : [m.default];
+    status.className = 'status on'; status.textContent = `Server sẵn sàng · ${models.length} model`;
+    banner.hidden = true;
+    for (const id of ['a', 'b']) {
+      const sel = $('#model-' + id), keep = sel.value;
+      sel.innerHTML = models.map(n => `<option>${esc(n)}</option>`).join('');
+      const pick = keep && models.includes(keep) ? keep
+        : (id === 'a' ? models.find(n => /3b/.test(n)) : models.find(n => /7b/.test(n))) || models[id === 'a' ? 0 : models.length - 1];
+      sel.value = pick;
     }
+    return true;
+  } catch (e) {
+    status.className = 'status off'; status.textContent = 'Không kết nối được server';
+    banner.hidden = false;
+    banner.innerHTML = `Không gọi được <code>${esc(API)}</code>. Khởi động backend bằng <code>python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000</code>, đảm bảo Ollama đang chạy, rồi bấm Bắt đầu lại.`;
+    return false;
+  }
+}
 
-    function appendTelemetryLog(type, targetDesc, extra = '', cssClass = '') {
-      count++;
-      eventCountEl.innerText = count + ' sự kiện';
-
-      const logItem = document.createElement('div');
-      logItem.className = 'log-item ' + cssClass;
-      const timeStr = new Date().toLocaleTimeString();
-      logItem.innerText = `[${timeStr}] ${type.padEnd(11)} -> [${targetDesc}] ${extra}`;
-
-      logContainer.appendChild(logItem);
-      logContainer.scrollTop = logContainer.scrollHeight;
-    }
-
-    function selectOption(optionItem) {
-      const key = optionItem.getAttribute('data-key');
-      userAnswers[currentIndex] = key;
-
-      document.querySelectorAll('.option-item').forEach(el => {
-        el.classList.remove('selected', 'is-correct', 'is-incorrect');
-      });
-
-      optionItem.classList.add('selected');
-      const radio = optionItem.querySelector('input[type="radio"]');
-      if (radio) radio.checked = true;
-
-      renderPagination();
-
-      if (toggleReveal.checked) {
-        revealAnswers(optionItem);
-      }
-    }
-
-    function revealAnswers(selectedEl) {
-      const q = QUIZ_DATA[currentIndex];
-      document.querySelectorAll('.option-item').forEach(el => {
-        const key = el.getAttribute('data-key');
-        if (key === q.correctKey) {
-          el.classList.add('is-correct');
-        } else if (selectedEl && el === selectedEl) {
-          el.classList.add('is-incorrect');
-        }
-      });
-
-      explanationCard.classList.add('visible');
-    }
-
-    // Telemetry Event Listener
-    const trackedEvents = ['pointerover', 'mouseover', 'pointermove', 'pointerdown', 'mousedown', 'focus', 'pointerup', 'mouseup', 'click', 'change'];
-
-    function handleEvent(e) {
-      const optionItem = e.target.closest('.option-item');
-      const isNavBtn = e.target.closest('#btnNext, #btnPrev, #btnSubmit');
-
-      if (!optionItem && !isNavBtn) return;
-
-      const targetDesc = optionItem ? optionItem.getAttribute('data-key') : (e.target.id || e.target.innerText?.trim());
-      const isTrustedStr = e.isTrusted ? 'trusted' : 'synthetic';
-      const coords = (e.clientX !== undefined) ? `(${Math.round(e.clientX)},${Math.round(e.clientY)})` : '';
-      
-      let cssClass = '';
-      if (e.type === 'click') cssClass = 'event-click';
-
-      appendTelemetryLog(e.type, targetDesc, `${coords} [${isTrustedStr}]`, cssClass);
-
-      if (e.type === 'click' && optionItem) {
-        selectOption(optionItem);
-      }
-    }
-
-    trackedEvents.forEach(evt => {
-      document.addEventListener(evt, handleEvent, true);
-    });
-
-    btnNext.addEventListener('click', () => {
-      if (currentIndex < QUIZ_DATA.length - 1) {
-        currentIndex++;
-        renderQuestion();
-      }
-    });
-
-    btnPrev.addEventListener('click', () => {
-      if (currentIndex > 0) {
-        currentIndex--;
-        renderQuestion();
-      }
-    });
-
-    btnRevealNow.addEventListener('click', () => {
-      const selected = optionsGroup.querySelector('.option-item.selected');
-      revealAnswers(selected);
-    });
-
-    btnSubmit.addEventListener('click', () => {
-      let correctCount = 0;
-      QUIZ_DATA.forEach((q, idx) => {
-        if (userAnswers[idx] === q.correctKey) correctCount++;
-      });
-
-      scoreValue.innerText = `${correctCount}/${QUIZ_DATA.length}`;
-      scoreSummary.innerText = `Agent đã hoàn thành toàn bộ bài thi trắc nghiệm CCHC! Số câu đúng: ${correctCount}/${QUIZ_DATA.length} (Đạt ${(correctCount/QUIZ_DATA.length*100).toFixed(0)}%).`;
-      scoreModal.classList.add('active');
-      appendTelemetryLog('SUBMIT_EXAM', 'FinalScore', `${correctCount}/${QUIZ_DATA.length}`, 'event-click');
-    });
-
-    btnRestartQuiz.addEventListener('click', () => {
-      scoreModal.classList.remove('active');
-      for (const k in userAnswers) delete userAnswers[k];
-      currentIndex = 0;
-      renderQuestion();
-    });
-
-    // Khởi chạy câu đầu tiên
-    renderQuestion();
-  </script>
-
-  <!-- Userscript tự động duyệt và giải bài thi -->
-  <script src="../client/quiz_agent.user.js"></script>
+$('#arena').innerHTML = shell('a') + shell('b');
+buildSheet('a'); buildSheet('b');
+for (const s of Object.values(sides)) paint(s);
+$('#arena').addEventListener('click', e => {
+  const c = e.target.closest('.cell'); if (!c) return;
+  const s = sides[c.dataset.side], i = +c.dataset.i;
+  if (!s.res[i] && i !== s.cur) return;
+  s.view = s.view === i ? null : i; paint(s);
+});
+$('#startBtn').addEventListener('click', start);
+$('#resetBtn').addEventListener('click', reset);
+checkServer();
+</script>
 </body>
 </html>
