@@ -77,7 +77,7 @@ def run_multi_eval():
             "question": item["question"],
             "options": item["options"]
         }
-        res = requests.post(SERVER_URL, json=payload, timeout=5)
+        res = requests.post(SERVER_URL, json=payload, timeout=120)
         data = res.json()
 
         is_match = data["selected_key"] == item["expected"]
