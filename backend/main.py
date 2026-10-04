@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import time
 
@@ -48,6 +49,7 @@ class OptionItem(BaseModel):
 class SolveRequest(BaseModel):
     question: str = Field(..., description="Nội dung câu hỏi trắc nghiệm")
     options: List[OptionItem] = Field(..., description="Danh sách các phương án trả lời")
+    model: Optional[str] = Field(None, description="Model Ollama dùng cho riêng yêu cầu này (mặc định: LLM_MODEL)")
 
 class SolveResponse(BaseModel):
     selected_key: str = Field(..., description="Phương án được chọn")
@@ -55,6 +57,9 @@ class SolveResponse(BaseModel):
     matched_chunk: str = Field(..., description="Trích đoạn ngữ cảnh tài liệu khớp nhất")
     suggested_delay_ms: int = Field(..., description="Thời gian trễ mô phỏng hành vi đọc con người (ms)")
     from_cache: bool = Field(False, description="Kết quả được lấy trực tiếp từ In-memory Cache")
+    model: str = Field("", description="Model đã xử lý yêu cầu")
+    source: str = Field("llm", description="'llm' nếu model trả lời, 'fallback' nếu phải dùng heuristic")
+    inference_ms: int = Field(0, description="Tổng thời gian truy xuất + suy luận phía server (ms)")
 
 class ReloadDocsResponse(BaseModel):
     status: str
@@ -105,6 +110,58 @@ def load_and_index_documents():
 def startup_event():
     load_and_index_documents()
 
+RE_DOC_REF = re.compile(r"\b(\d{1,5})\s*/\s*[\wĐđ-]+", re.UNICODE)
+
+def detect_doc_hint(question: str) -> List[str]:
+    """Số hiệu văn bản trong câu hỏi (vd '244/KH-UBND' -> '244') -> các file docs/ có tên bắt đầu bằng số đó."""
+    nums = {m.group(1) for m in RE_DOC_REF.finditer(question)}
+    names = {c.doc_name for c in bm25_engine.chunks}
+    return sorted(n for n in names if any(n.startswith(num + ".") for num in nums))
+
+def retrieve_context(question: str, options: List[dict], top_k: int = 3, per_query_k: int = 8, rrf_k: int = 60):
+    """
+    Truy xuất đa truy vấn: 1 truy vấn tổng (câu hỏi + mọi đáp án) và 1 truy vấn riêng cho từng đáp án
+    (câu hỏi + đáp án đó), hợp nhất bằng Reciprocal Rank Fusion để mỗi đáp án đều có bằng chứng riêng.
+    - Số hiệu văn bản bị loại khỏi truy vấn (nó kéo về các chunk Căn cứ/tiêu đề) và chỉ dùng để lọc đúng văn bản.
+    - Chunk liền kề cùng mục được ghép thêm để không cắt mất phần trả lời nằm ở chunk sau.
+    """
+    clean_q = RE_DOC_REF.sub(" ", question)
+    queries = [clean_q + " " + " ".join(o["text"] for o in options)]
+    queries += [f"{clean_q} {o['text']}" for o in options]
+    allowed_docs = set(detect_doc_hint(question))
+
+    fused: Dict[str, float] = {}
+    by_id: Dict[str, DocumentChunk] = {}
+    for qi, q in enumerate(queries):
+        weight = 1.5 if qi == 0 else 1.0
+        hits = [h for h in bm25_engine.search(q, top_k=per_query_k) if not allowed_docs or h[0].doc_name in allowed_docs]
+        for rank, (chunk, _score) in enumerate(hits):
+            by_id[chunk.chunk_id] = chunk
+            fused[chunk.chunk_id] = fused.get(chunk.chunk_id, 0.0) + weight / (rrf_k + rank + 1)
+
+    ranked = sorted(fused.items(), key=lambda kv: kv[1], reverse=True)[:top_k]
+    return [expand_with_neighbor(by_id[cid]) for cid, _ in ranked]
+
+def expand_with_neighbor(chunk: DocumentChunk) -> DocumentChunk:
+    """Ghép chunk kế tiếp nếu cùng văn bản và cùng mục (level_2) với chunk được chọn."""
+    chunks = bm25_engine.chunks
+    idx = next((i for i, c in enumerate(chunks) if c.chunk_id == chunk.chunk_id), -1)
+    if idx < 0 or idx + 1 >= len(chunks):
+        return chunk
+    nxt = chunks[idx + 1]
+    same_section = (
+        nxt.doc_name == chunk.doc_name
+        and nxt.metadata.get("level_2") == chunk.metadata.get("level_2")
+        and nxt.metadata.get("level_1") == chunk.metadata.get("level_1")
+        and not nxt.metadata.get("kind")
+        and not chunk.metadata.get("kind")
+    )
+    if not same_section:
+        return chunk
+    merged = chunk.model_copy()
+    merged.enriched_text = chunk.enriched_text + "\n" + nxt.raw_content
+    return merged
+
 # ----------------- API ENDPOINTS -----------------
 @app.get("/health")
 def get_health():
@@ -134,7 +191,9 @@ def solve(req: SolveRequest):
     options_dict = [{"key": opt.key, "text": opt.text} for opt in req.options]
 
     # 1. Tra cứu Cache O(1)
-    cache_key = cache_engine.generate_key(req.question, options_dict)
+    model_name = req.model or LLM_MODEL
+    t_start = time.perf_counter()
+    cache_key = cache_engine.generate_key(req.question, options_dict) + "|" + model_name
     cached_val = cache_engine.get(cache_key)
     if cached_val:
         return SolveResponse(
@@ -142,16 +201,17 @@ def solve(req: SolveRequest):
             confidence=cached_val["confidence"],
             matched_chunk=cached_val["matched_chunk"],
             suggested_delay_ms=cached_val["suggested_delay_ms"],
-            from_cache=True
+            from_cache=True,
+            model=model_name,
+            source=cached_val.get("source", "llm"),
+            inference_ms=cached_val.get("inference_ms", 0)
         )
 
     # 2. In-memory BM25 Retrieval
-    search_query = req.question + " " + " ".join(opt.text for opt in req.options)
-    retrieved = bm25_engine.search(search_query, top_k=2)
+    retrieved = retrieve_context(req.question, options_dict)
 
     if retrieved:
-        top_chunk, score = retrieved[0]
-        context_text = top_chunk.enriched_text
+        context_text = "\n\n".join(f"[Đoạn {i}] {c.enriched_text[:1500]}" for i, c in enumerate(retrieved, 1))
     else:
         context_text = "Không tìm thấy dữ liệu đối chiếu trong kho tài liệu."
 
@@ -159,8 +219,11 @@ def solve(req: SolveRequest):
     selected_key, confidence, matched_fact = reasoning_engine.solve(
         question=req.question,
         options=options_dict,
-        context_text=context_text
+        context_text=context_text,
+        model=model_name
     )
+    source = "llm" if matched_fact.startswith("LLM ") else "fallback"
+    inference_ms = int((time.perf_counter() - t_start) * 1000)
 
     # 4. Tính toán thời gian trễ mô phỏng đọc tự nhiên
     full_text_to_read = req.question + " " + " ".join(f"{o.key} {o.text}" for o in req.options)
@@ -170,7 +233,9 @@ def solve(req: SolveRequest):
         "selected_key": selected_key,
         "confidence": round(confidence, 2),
         "matched_chunk": context_text[:300],
-        "suggested_delay_ms": suggested_delay
+        "suggested_delay_ms": suggested_delay,
+        "source": source,
+        "inference_ms": inference_ms
     }
 
     # Lưu vào Cache LRU
@@ -181,8 +246,23 @@ def solve(req: SolveRequest):
         confidence=result_data["confidence"],
         matched_chunk=result_data["matched_chunk"],
         suggested_delay_ms=result_data["suggested_delay_ms"],
-        from_cache=False
+        from_cache=False,
+        model=model_name,
+        source=source,
+        inference_ms=inference_ms
     )
+
+@app.get("/models")
+def list_models():
+    """Danh sách model đang có trên Ollama (cho giao diện so sánh)."""
+    import requests
+    tags_url = OLLAMA_API_URL.replace("/api/generate", "/api/tags")
+    try:
+        data = requests.get(tags_url, timeout=3).json()
+        names = sorted(m["name"] for m in data.get("models", []))
+    except Exception:
+        names = []
+    return {"default": LLM_MODEL, "models": names}
 
 if __name__ == "__main__":
     import uvicorn

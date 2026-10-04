@@ -24,6 +24,8 @@ class LegalDocumentParser:
     RE_LEVEL_3 = re.compile(r"^(?:[a-zđ]\)\s+|[0-9]+\.\s+|[0-9]+\)\s+)\s*(.*)")
     RE_BULLET  = re.compile(r"^(?:[\-\+\*•]\s+)(.*)")
 
+    RE_SIGNATURE = re.compile(r"(?:KT\.|TM\.|Nơi nhận)", re.IGNORECASE)
+
     def __init__(self, max_chunk_chars: int = 600, min_chunk_chars: int = 80):
         self.max_chunk_chars = max_chunk_chars
         self.min_chunk_chars = min_chunk_chars
@@ -90,6 +92,23 @@ class LegalDocumentParser:
             if not line_str or line_str.startswith("|---"):
                 continue
 
+            # Khối chữ ký / nơi nhận -> chunk riêng để truy xuất "ai ký, ký thay ai"
+            if line_str.startswith("|") and self.RE_SIGNATURE.search(line_str):
+                flush_buffer()
+                sig_text = re.sub(r"<br\s*/?>", "; ", line_str).replace("|", " ").replace("*", "")
+                sig_text = re.sub(r"\s+", " ", sig_text).strip()
+                sig_breadcrumb = f"[{doc_name}] > [Chữ ký, người ký, ký thay (KT.), thừa lệnh, nơi nhận]"
+                chunks.append(DocumentChunk(
+                    chunk_id=f"{doc_name}_sig{chunk_idx:04d}",
+                    doc_name=doc_name,
+                    breadcrumb=sig_breadcrumb,
+                    raw_content=sig_text,
+                    enriched_text=sig_breadcrumb + "\n" + sig_text,
+                    metadata={"kind": "signature"}
+                ))
+                chunk_idx += 1
+                continue
+
             # Kiểm tra Cấp 1 (Chương/Phần)
             m1 = self.RE_LEVEL_1.match(line_str)
             if m1:
@@ -122,4 +141,31 @@ class LegalDocumentParser:
                 flush_buffer()
 
         flush_buffer()
+
+        header = self._build_header_chunk(lines, doc_name)
+        if header:
+            chunks.insert(0, header)
         return chunks
+
+    def _build_header_chunk(self, lines: List[str], doc_name: str) -> Optional[DocumentChunk]:
+        """Chunk thông tin văn bản: số hiệu, ngày ban hành, cơ quan, tiêu đề (trước phần 'Căn cứ')."""
+        head: List[str] = []
+        for line in lines:
+            t = line.strip()
+            if not t or t.startswith("|---") or t.startswith("| | |"):
+                continue
+            if re.match(r"^\**\s*Căn cứ", t.lstrip("*_ ")) or t.startswith("*Căn cứ") or t.startswith("##") or len(head) >= 12:
+                break
+            head.append(re.sub(r"<br\s*/?>", "; ", t).replace("|", " ").replace("*", "").lstrip("# "))
+        text = re.sub(r"\s+", " ", " ".join(head)).strip()
+        if not text:
+            return None
+        breadcrumb = f"[{doc_name}] > [Thông tin văn bản: số hiệu, ngày ban hành, cơ quan ban hành, tiêu đề]"
+        return DocumentChunk(
+            chunk_id=f"{doc_name}_head",
+            doc_name=doc_name,
+            breadcrumb=breadcrumb,
+            raw_content=text,
+            enriched_text=breadcrumb + "\n" + text,
+            metadata={"kind": "header"}
+        )

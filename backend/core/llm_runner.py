@@ -1,4 +1,6 @@
 import json
+import logging
+import math
 import random
 import re
 from typing import Dict, List, Optional, Tuple
@@ -17,12 +19,14 @@ from ..config import (
     DECISION_TIME_STD_MS
 )
 
+logger = logging.getLogger("llm_runner")
+
 SYSTEM_PROMPT = (
-    "Bạn là một giám khảo AI chuyên trích xuất và chọn đáp án chính xác cho bài thi trắc nghiệm.\n"
-    "CHỈ DỰA VÀO [NGỮ CẢNH ĐƯỢC CẤP] để chọn phương án đúng. Tuyệt đối không tự suy đoán thông tin ngoài ngữ cảnh.\n"
-    "BẮT BUỘC trả về DUY NHẤT một chuỗi JSON hợp lệ với định dạng:\n"
-    '{"selected_key": "A"|"B"|"C"|"D", "confidence": float, "matched_fact": string}\n'
-    "Không giải thích thêm, không dùng khối markdown ```json."
+    "Bạn là giám khảo chọn đáp án chính xác cho bài thi trắc nghiệm.\n"
+    "CHỈ DỰA VÀO phần NGỮ CẢNH được cấp, không dùng kiến thức bên ngoài. Ngữ cảnh có thể gồm nhiều đoạn; "
+    "hãy tìm đoạn trả lời trực tiếp câu hỏi và đối chiếu từng phương án với nội dung đó.\n"
+    "Loại các phương án mâu thuẫn với ngữ cảnh (sai chủ thể, sai số liệu, phủ định điều văn bản yêu cầu).\n"
+    'Trả về JSON dạng {"selected_key": "<A|B|C|D>"} và không viết gì thêm.'
 )
 
 class LLMReasoningEngine:
@@ -143,10 +147,30 @@ class LLMReasoningEngine:
         confidence = 0.80 if best_score > 5.0 else (0.60 if best_score > 0 else 0.40)
         return best_key, confidence, best_fact or "Heuristic fallback match."
 
-    def solve(self, question: str, options: List[dict], context_text: str) -> Tuple[str, float, str]:
+    @staticmethod
+    def _key_confidence(logprobs, selected_key: str, valid_keys: List[str]) -> float:
+        """Xác suất chuẩn hóa của token đáp án (softmax trên các key hợp lệ); 0.85 nếu Ollama không trả logprobs."""
+        try:
+            for entry in logprobs or []:
+                if entry.get("token", "").strip().upper() == selected_key:
+                    probs = {}
+                    for cand in entry.get("top_logprobs", []):
+                        k = cand.get("token", "").strip().upper()
+                        if k in valid_keys:
+                            probs[k] = max(probs.get(k, 0.0), math.exp(cand["logprob"]))
+                    total = sum(probs.values())
+                    if total > 0 and selected_key in probs:
+                        return probs[selected_key] / total
+        except Exception:
+            pass
+        return 0.85
+
+    def solve(self, question: str, options: List[dict], context_text: str, model: Optional[str] = None) -> Tuple[str, float, str]:
         """
         Thực hiện suy luận: Ưu tiên Local LLM -> Nếu thất bại/timeout thì kích hoạt Heuristic Fallback.
+        `model` ghi đè model mặc định cho riêng lần gọi này (dùng để so sánh nhiều model song song).
         """
+        model_name = model or self.model
         # Xây dựng User Prompt
         prompt_lines = [
             f"NGỮ CẢNH:\n{context_text}\n",
@@ -157,18 +181,27 @@ class LLMReasoningEngine:
             prompt_lines.append(f"{opt.get('key')}. {opt.get('text')}")
         user_prompt = "\n".join(prompt_lines)
 
+        valid_keys = [str(o.get("key", "")).upper() for o in options]
+        schema = {
+            "type": "object",
+            "properties": {"selected_key": {"type": "string", "enum": valid_keys}},
+            "required": ["selected_key"],
+        }
+
         try:
             res = requests.post(
                 self.ollama_url,
                 json={
-                    "model": self.model,
+                    "model": model_name,
                     "system": SYSTEM_PROMPT,
                     "prompt": user_prompt,
-                    "format": "json",
+                    "format": schema,
                     "stream": False,
+                    "logprobs": True,
+                    "top_logprobs": 6,
                     "options": {
                         "temperature": 0.0,
-                        "num_predict": 60,
+                        "num_predict": 24,
                         "top_p": 0.1
                     }
                 },
@@ -177,21 +210,18 @@ class LLMReasoningEngine:
 
             if res.status_code == 200:
                 body = res.json()
-                raw_response = body.get("response", "{}")
-                parsed = json.loads(raw_response)
-                
+                parsed = json.loads(body.get("response", "{}"))
                 selected_key = str(parsed.get("selected_key", "")).strip().upper()
-                confidence = float(parsed.get("confidence", 0.85))
-                matched_fact = str(parsed.get("matched_fact", ""))
 
-                # Kiểm tra tính hợp lệ của key
-                valid_keys = [o.get("key", "").upper() for o in options]
-                if selected_key in valid_keys and confidence >= self.confidence_threshold:
-                    return selected_key, confidence, matched_fact
+                if selected_key in valid_keys:
+                    confidence = self._key_confidence(body.get("logprobs"), selected_key, valid_keys)
+                    return selected_key, confidence, f"LLM {model_name}"
+                logger.warning("LLM %s trả key không hợp lệ: %r", model_name, selected_key)
+            else:
+                logger.warning("Ollama HTTP %s: %s", res.status_code, res.text[:200])
 
         except Exception as e:
-            # LLM offline, timeout hoặc JSON không hợp lệ -> Chuyển sang Fallback
-            pass
+            logger.warning("LLM %s lỗi (%s: %s) -> dùng heuristic fallback", model_name, type(e).__name__, e)
 
         # Kích hoạt Heuristic Fallback
         return self.heuristic_fallback(question, options, context_text)

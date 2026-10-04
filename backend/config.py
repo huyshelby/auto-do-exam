@@ -11,7 +11,7 @@ SERVER_PORT = 8000
 # Local LLM Configs (Ollama / llama.cpp)
 OLLAMA_API_URL = os.environ.get("OLLAMA_API_URL", "http://127.0.0.1:11434/api/generate")
 LLM_MODEL = os.environ.get("LLM_MODEL", "qwen2.5:3b")
-LLM_TIMEOUT_SECONDS = 1.1  # 1100ms hard deadline
+LLM_TIMEOUT_SECONDS = float(os.environ.get("LLM_TIMEOUT_SECONDS", "45"))  # 1.1s cũ khiến mọi lần gọi LLM timeout -> luôn rơi vào heuristic
 CONFIDENCE_THRESHOLD = 0.70
 
 # Human Pacing Constants
