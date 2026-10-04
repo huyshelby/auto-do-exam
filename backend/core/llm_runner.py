@@ -10,6 +10,9 @@ from ..config import (
     OLLAMA_API_URL,
     LLM_MODEL,
     LLM_TIMEOUT_SECONDS,
+    LLM_MODE,
+    LLM_KEEP_ALIVE,
+    LLM_NUM_CTX,
     CONFIDENCE_THRESHOLD,
     PACING_MIN_DELAY_MS,
     PACING_MAX_DELAY_MS,
@@ -29,6 +32,14 @@ SYSTEM_PROMPT = (
     'Trả về JSON dạng {"selected_key": "<A|B|C|D>"} và không viết gì thêm.'
 )
 
+SYSTEM_PROMPT_TOKEN = (
+    "Bạn là giám khảo chọn đáp án chính xác cho bài thi trắc nghiệm.\n"
+    "CHỈ DỰA VÀO phần NGỮ CẢNH được cấp, không dùng kiến thức bên ngoài. Ngữ cảnh có thể gồm nhiều đoạn; "
+    "hãy tìm đoạn trả lời trực tiếp câu hỏi và đối chiếu từng phương án với nội dung đó.\n"
+    "Loại các phương án mâu thuẫn với ngữ cảnh (sai chủ thể, sai số liệu, phủ định điều văn bản yêu cầu).\n"
+    "Chỉ trả lời bằng ĐÚNG MỘT chữ cái của phương án đúng, không viết gì thêm."
+)
+
 class LLMReasoningEngine:
     def __init__(
         self,
@@ -41,6 +52,7 @@ class LLMReasoningEngine:
         self.model = model
         self.timeout = timeout
         self.confidence_threshold = confidence_threshold
+        self.session = requests.Session()  # tái sử dụng kết nối TCP tới Ollama
 
     def calculate_gaussian_delay(self, text: str) -> int:
         """
@@ -165,7 +177,29 @@ class LLMReasoningEngine:
             pass
         return 0.85
 
+    @staticmethod
+    def _first_token_choice(logprobs, valid_keys: List[str]) -> Optional[Tuple[str, float]]:
+        """Chế độ 1 token (kiểu Jev): đọc phân phối của token sinh ra đầu tiên, softmax trên các key hợp lệ."""
+        try:
+            for entry in logprobs or []:
+                probs: Dict[str, float] = {}
+                for cand in [entry] + list(entry.get("top_logprobs", [])):
+                    k = cand.get("token", "").strip().upper()
+                    if k in valid_keys:
+                        probs[k] = max(probs.get(k, 0.0), math.exp(cand["logprob"]))
+                total = sum(probs.values())
+                if total > 0:
+                    best = max(probs, key=probs.get)
+                    return best, probs[best] / total
+                break  # chỉ xét token đầu tiên
+        except Exception:
+            pass
+        return None
+
     def solve(self, question: str, options: List[dict], context_text: str, model: Optional[str] = None) -> Tuple[str, float, str]:
+        return self.solve_ex(question, options, context_text, model)[:3]
+
+    def solve_ex(self, question: str, options: List[dict], context_text: str, model: Optional[str] = None) -> Tuple[str, float, str, Dict[str, int]]:
         """
         Thực hiện suy luận: Ưu tiên Local LLM -> Nếu thất bại/timeout thì kích hoạt Heuristic Fallback.
         `model` ghi đè model mặc định cho riêng lần gọi này (dùng để so sánh nhiều model song song).
@@ -179,6 +213,9 @@ class LLMReasoningEngine:
         ]
         for opt in options:
             prompt_lines.append(f"{opt.get('key')}. {opt.get('text')}")
+        token_mode = LLM_MODE == "token"
+        if token_mode:
+            prompt_lines.append("\nĐáp án:")
         user_prompt = "\n".join(prompt_lines)
 
         valid_keys = [str(o.get("key", "")).upper() for o in options]
@@ -188,35 +225,52 @@ class LLMReasoningEngine:
             "required": ["selected_key"],
         }
 
+        payload = {
+            "model": model_name,
+            "system": SYSTEM_PROMPT_TOKEN if token_mode else SYSTEM_PROMPT,
+            "prompt": user_prompt,
+            "stream": False,
+            "logprobs": True,
+            "top_logprobs": 6,
+            "keep_alive": LLM_KEEP_ALIVE,
+            "options": {
+                "temperature": 0.0,
+                "num_predict": 1 if token_mode else 24,
+                "num_ctx": LLM_NUM_CTX,
+                "top_p": 0.1
+            }
+        }
+        if not token_mode:
+            payload["format"] = schema
+
+        timing: Dict[str, int] = {}
         try:
-            res = requests.post(
-                self.ollama_url,
-                json={
-                    "model": model_name,
-                    "system": SYSTEM_PROMPT,
-                    "prompt": user_prompt,
-                    "format": schema,
-                    "stream": False,
-                    "logprobs": True,
-                    "top_logprobs": 6,
-                    "options": {
-                        "temperature": 0.0,
-                        "num_predict": 24,
-                        "top_p": 0.1
-                    }
-                },
-                timeout=self.timeout
-            )
+            res = self.session.post(self.ollama_url, json=payload, timeout=self.timeout)
 
             if res.status_code == 200:
                 body = res.json()
-                parsed = json.loads(body.get("response", "{}"))
-                selected_key = str(parsed.get("selected_key", "")).strip().upper()
+                timing = {
+                    "load_ms": int(body.get("load_duration", 0) / 1e6),
+                    "prompt_eval_ms": int(body.get("prompt_eval_duration", 0) / 1e6),
+                    "eval_ms": int(body.get("eval_duration", 0) / 1e6),
+                    "prompt_tokens": int(body.get("prompt_eval_count", 0)),
+                }
+                if token_mode:
+                    picked = self._first_token_choice(body.get("logprobs"), valid_keys)
+                    if picked is None:  # không có logprobs: đọc chữ cái đầu của văn bản sinh ra
+                        text = str(body.get("response", "")).strip().upper()[:1]
+                        picked = (text, 0.85) if text in valid_keys else None
+                    if picked:
+                        return picked[0], picked[1], f"LLM {model_name}", timing
+                    logger.warning("LLM %s không trả key hợp lệ (token mode): %r", model_name, body.get("response"))
+                else:
+                    parsed = json.loads(body.get("response", "{}"))
+                    selected_key = str(parsed.get("selected_key", "")).strip().upper()
 
-                if selected_key in valid_keys:
-                    confidence = self._key_confidence(body.get("logprobs"), selected_key, valid_keys)
-                    return selected_key, confidence, f"LLM {model_name}"
-                logger.warning("LLM %s trả key không hợp lệ: %r", model_name, selected_key)
+                    if selected_key in valid_keys:
+                        confidence = self._key_confidence(body.get("logprobs"), selected_key, valid_keys)
+                        return selected_key, confidence, f"LLM {model_name}", timing
+                    logger.warning("LLM %s trả key không hợp lệ: %r", model_name, selected_key)
             else:
                 logger.warning("Ollama HTTP %s: %s", res.status_code, res.text[:200])
 
@@ -224,4 +278,4 @@ class LLMReasoningEngine:
             logger.warning("LLM %s lỗi (%s: %s) -> dùng heuristic fallback", model_name, type(e).__name__, e)
 
         # Kích hoạt Heuristic Fallback
-        return self.heuristic_fallback(question, options, context_text)
+        return (*self.heuristic_fallback(question, options, context_text), timing)

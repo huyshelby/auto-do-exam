@@ -20,7 +20,9 @@ from .config import (
     SERVER_HOST,
     SERVER_PORT,
     OLLAMA_API_URL,
-    LLM_MODEL
+    LLM_MODEL,
+    CONTEXT_TOP_K,
+    CONTEXT_CHUNK_CHARS
 )
 from .core.normalizer import TextNormalizer
 from .core.parser import LegalDocumentParser, DocumentChunk
@@ -43,12 +45,12 @@ app.add_middleware(
 
 # ----------------- SCHEMAS -----------------
 class OptionItem(BaseModel):
-    key: str = Field(..., description="Ký tự định danh đáp án (A, B, C, D...)")
-    text: str = Field(..., description="Nội dung đáp án")
+    key: str = Field(..., max_length=8, description="Ký tự định danh đáp án (A, B, C, D...)")
+    text: str = Field(..., max_length=1000, description="Nội dung đáp án")
 
 class SolveRequest(BaseModel):
-    question: str = Field(..., description="Nội dung câu hỏi trắc nghiệm")
-    options: List[OptionItem] = Field(..., description="Danh sách các phương án trả lời")
+    question: str = Field(..., max_length=4000, description="Nội dung câu hỏi trắc nghiệm")
+    options: List[OptionItem] = Field(..., max_length=10, description="Danh sách các phương án trả lời")
     model: Optional[str] = Field(None, description="Model Ollama dùng cho riêng yêu cầu này (mặc định: LLM_MODEL)")
 
 class SolveResponse(BaseModel):
@@ -60,6 +62,7 @@ class SolveResponse(BaseModel):
     model: str = Field("", description="Model đã xử lý yêu cầu")
     source: str = Field("llm", description="'llm' nếu model trả lời, 'fallback' nếu phải dùng heuristic")
     inference_ms: int = Field(0, description="Tổng thời gian truy xuất + suy luận phía server (ms)")
+    timing: Dict[str, int] = Field(default_factory=dict, description="Phân rã thời gian Ollama: load/prompt_eval/eval (ms) và số token prompt")
 
 class ReloadDocsResponse(BaseModel):
     status: str
@@ -204,19 +207,20 @@ def solve(req: SolveRequest):
             from_cache=True,
             model=model_name,
             source=cached_val.get("source", "llm"),
-            inference_ms=cached_val.get("inference_ms", 0)
+            inference_ms=cached_val.get("inference_ms", 0),
+            timing=cached_val.get("timing", {})
         )
 
     # 2. In-memory BM25 Retrieval
-    retrieved = retrieve_context(req.question, options_dict)
+    retrieved = retrieve_context(req.question, options_dict, top_k=CONTEXT_TOP_K)
 
     if retrieved:
-        context_text = "\n\n".join(f"[Đoạn {i}] {c.enriched_text[:1500]}" for i, c in enumerate(retrieved, 1))
+        context_text = "\n\n".join(f"[Đoạn {i}] {c.enriched_text[:CONTEXT_CHUNK_CHARS]}" for i, c in enumerate(retrieved, 1))
     else:
         context_text = "Không tìm thấy dữ liệu đối chiếu trong kho tài liệu."
 
     # 3. Suy luận AI (Local LLM / Heuristic Fallback)
-    selected_key, confidence, matched_fact = reasoning_engine.solve(
+    selected_key, confidence, matched_fact, timing = reasoning_engine.solve_ex(
         question=req.question,
         options=options_dict,
         context_text=context_text,
@@ -235,7 +239,8 @@ def solve(req: SolveRequest):
         "matched_chunk": context_text[:300],
         "suggested_delay_ms": suggested_delay,
         "source": source,
-        "inference_ms": inference_ms
+        "inference_ms": inference_ms,
+        "timing": timing
     }
 
     # Lưu vào Cache LRU
@@ -249,7 +254,8 @@ def solve(req: SolveRequest):
         from_cache=False,
         model=model_name,
         source=source,
-        inference_ms=inference_ms
+        inference_ms=inference_ms,
+        timing=timing
     )
 
 @app.get("/models")

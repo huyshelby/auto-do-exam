@@ -23,17 +23,22 @@ def main():
     requests.post(f"{BASE_URL}/reload-docs", timeout=30)
     model = requests.get(f"{BASE_URL}/health", timeout=5).json().get("llm_model")
     questions = load_questions()
-    correct, total_t, misses = 0, 0.0, []
+    correct, total_t, misses, timing_sum = 0, 0.0, [], {}
     for q in questions:
         t0 = time.time()
         data = requests.post(f"{BASE_URL}/solve", json={"question": q["question"], "options": q["options"]}, timeout=180).json()
         dt = time.time() - t0
         total_t += dt
+        for k, v in data.get("timing", {}).items():
+            timing_sum[k] = timing_sum.get(k, 0) + v
         ok = data["selected_key"] == q["expected"]
         correct += ok
         if not ok:
             misses.append((q, data, dt))
     print(f"MODEL={model}  ĐÚNG {correct}/{len(questions)} ({100*correct/len(questions):.1f}%)  TB {total_t/len(questions):.1f}s/câu")
+    if timing_sum:
+        n = len(questions)
+        print("  TB/câu: " + ", ".join(f"{k}={v / n:.0f}" for k, v in timing_sum.items()))
     for q, d, dt in misses:
         print(f"  ✗ {q['id']}: dự đoán {d['selected_key']} (tin cậy {d['confidence']}) kỳ vọng {q['expected']} | {q['question'][:80]}")
 
