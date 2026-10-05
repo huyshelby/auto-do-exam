@@ -72,7 +72,7 @@
 - **Nguyên nhân gốc:** 7b (5,06 GB) không vừa 4 GB VRAM. Log Ollama: `offloaded 12/29 layers to GPU`; `ollama ps`: `size_vram` 2,27 GB trên tổng 5,06 GB. Các lớp còn lại chạy trên CPU nên bước xử lý prompt chậm: ~84 token/giây (3b: 230–870 token/giây).
 - Bước sinh đáp án gần như bằng 0 (`eval_ms=0`); thời gian gần như toàn bộ là `prompt_eval_ms`.
 - **Cạm bẫy đã gặp:** bật `OLLAMA_FLASH_ATTENTION=1` + `OLLAMA_KV_CACHE_TYPE=q8_0` làm mọi yêu cầu tới **7b treo** (kể cả prompt "1+1=" không trả lời trong 600 s; backend timeout 45 s rồi rơi vào heuristic). Bỏ hai biến này thì 7b nạp trong 8,5 s và chạy bình thường. Với 3b, hai biến này không cải thiện gì. **Đừng bật chúng** khi dùng 7b.
-- **Lỗi cache đã phát hiện, chưa sửa:** `/solve` lưu cả kết quả `source="fallback"` vào cache theo khóa của model. Các lần timeout của 7b nên bị cache thành kết quả heuristic và lần sau trả ngay trong 0,0 s với `source="fallback"`, làm số đo trông nhanh nhưng sai. Chỉ hết khi gọi `/reload-docs`. Cần sửa: không cache khi `source == "fallback"`.
+- **Lỗi cache (đã sửa):** trước đây `/solve` lưu cả kết quả `source="fallback"` vào cache theo khóa của model, nên các lần timeout bị cache thành kết quả heuristic và lần sau trả ngay trong 0,0 s, làm số đo trông nhanh nhưng sai. Giờ chỉ cache kết quả `source == "llm"` (`backend/main.py`). Đã kiểm chứng: câu dùng LLM lần hai trả `from_cache=true`; câu với model không tồn tại (rơi vào fallback) hai lần đều `from_cache=false`.
 
 ### 2.7. Trạng thái Git
 - Nhánh `master`, các commit của phiên này (mới nhất ở trên):
@@ -154,14 +154,13 @@ Chạy: `python tests/eval_bench.py` (cần backend chạy; model chọn bằng 
 
 ## 5. VIỆC CẦN LÀM TIẾP
 
-1. **Sửa lỗi cache:** không lưu kết quả `source == "fallback"` vào cache (xem 2.6).
-2. **~~Xếp tầng 3b → 7b~~ (đã hủy do chỉ giữ một model).** Thay bằng: nếu muốn nhanh hơn nữa, thử cho heuristic có biên điểm rõ bỏ qua LLM, hoặc đo xem model nhỏ hơn có đủ chính xác không. Trang đánh giá đã được đơn giản hóa thành một model (xem 2.3).
-3. **Kiểm chứng giao diện đầy đủ:** chạy trọn một lượt ở chế độ Lần lượt, xem màn hình đánh giá cuối, thử màn hình hẹp, thử Tải kết quả (.json), thử chế độ Nhịp người. Cân nhắc hiển thị trường `timing` trên trang. Sửa mẫu rồi chạy `build_mock_page.py`.
-4. **Mở rộng chế độ một token cho yes/no và score** (phương án đã đề xuất, chưa làm): yes/no dùng hai token `Đúng`/`Sai`, score dùng các token chữ số `1–5` và tính điểm kỳ vọng ∑ k·P(k); thêm trường `type` vào `/solve`.
-5. **Cải thiện độ chính xác nếu cần:** hybrid retrieval (embedding như `bge-m3`) + reranker, lọc văn bản theo tên đơn vị ("xã Đại Lộc"), mở rộng bộ đánh giá bằng câu hỏi diễn đạt khác từ khóa, thử Qwen3-8B. Việc giảm số đoạn ngữ cảnh làm chất lượng xếp hạng chunk quan trọng hơn.
-6. **Quyết định còn mở:** có khôi phục Telemetry Monitor và khả năng chạy bằng userscript trên một trang riêng hay không.
-7. **Bảo mật cơ bản:** thông báo review sau commit nêu rủi ro cạn tài nguyên và gọi chéo nguồn ở `backend/main.py` nhưng không có chi tiết. Đã thêm giới hạn kích thước đầu vào cho `/solve`. CORS vẫn là `allow_origins=["*"]` (trang đánh giá mở bằng `file://` cần nó); server chỉ nghe trên `127.0.0.1`. Nếu mở ra ngoài máy cục bộ thì phải siết lại.
-8. Khi thêm tài liệu vào `docs/`: gọi `POST /reload-docs`; chunk header/chữ ký được sinh tự động cho mọi file `.md`/`.txt`.
+1. **~~Xếp tầng 3b → 7b~~ (đã hủy do chỉ giữ một model).** Thay bằng: nếu muốn nhanh hơn nữa, thử cho heuristic có biên điểm rõ bỏ qua LLM, hoặc đo xem model nhỏ hơn có đủ chính xác không. Trang đánh giá đã được đơn giản hóa thành một model (xem 2.3).
+2. **Kiểm chứng nốt giao diện một model:** thử màn hình hẹp, nút Tải kết quả (.json) và nhịp Nhịp người (lượt chạy đầy đủ và màn hình kết quả đã kiểm chứng, xem 2.4). Cân nhắc hiển thị trường `timing` trên trang. Sửa mẫu rồi chạy `build_mock_page.py`.
+3. **Mở rộng chế độ một token cho yes/no và score** (phương án đã đề xuất, chưa làm): yes/no dùng hai token `Đúng`/`Sai`, score dùng các token chữ số `1–5` và tính điểm kỳ vọng ∑ k·P(k); thêm trường `type` vào `/solve`.
+4. **Cải thiện độ chính xác nếu cần:** hybrid retrieval (embedding như `bge-m3`) + reranker, lọc văn bản theo tên đơn vị ("xã Đại Lộc"), mở rộng bộ đánh giá bằng câu hỏi diễn đạt khác từ khóa, thử Qwen3-8B. Việc giảm số đoạn ngữ cảnh làm chất lượng xếp hạng chunk quan trọng hơn.
+5. **Quyết định còn mở:** có khôi phục Telemetry Monitor và khả năng chạy bằng userscript trên một trang riêng hay không.
+6. **Bảo mật cơ bản:** thông báo review sau commit nêu rủi ro cạn tài nguyên và gọi chéo nguồn ở `backend/main.py` nhưng không có chi tiết. Đã thêm giới hạn kích thước đầu vào cho `/solve`. CORS vẫn là `allow_origins=["*"]` (trang đánh giá mở bằng `file://` cần nó); server chỉ nghe trên `127.0.0.1`. Nếu mở ra ngoài máy cục bộ thì phải siết lại.
+7. Khi thêm tài liệu vào `docs/`: gọi `POST /reload-docs`; chunk header/chữ ký được sinh tự động cho mọi file `.md`/`.txt`.
 
 ---
 

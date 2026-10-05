@@ -243,8 +243,9 @@ def solve(req: SolveRequest):
         "timing": timing
     }
 
-    # Lưu vào Cache LRU
-    cache_engine.set(cache_key, result_data)
+    # Lưu vào Cache LRU (không lưu kết quả heuristic: lần sau phải thử lại LLM thay vì trả lại đáp án dự phòng)
+    if source == "llm":
+        cache_engine.set(cache_key, result_data)
 
     return SolveResponse(
         selected_key=result_data["selected_key"],
