@@ -13,7 +13,7 @@
   1. Tra cứu **BM25 trong bộ nhớ** trên các văn bản ở `docs/` (không dùng cloud hay API ngoài).
   2. Suy luận bằng **Local LLM qua Ollama** theo chế độ **một token đáp án** (kiểu "decision model" của Jev): prompt kết thúc bằng `Đáp án:`, `num_predict=1`, độ tin cậy lấy từ softmax logprob của token đầu trên các key hợp lệ. Nếu LLM lỗi hoặc timeout thì rơi về **heuristic fallback** (n-gram, số liệu, khoảng cách từ khóa) và có ghi log cảnh báo.
   3. Backend trả thêm `suggested_delay_ms` (Gauss 3–6 s) để client mô phỏng nhịp đọc.
-- **Quyết định (2026-10-05): chỉ giữ MỘT model là `qwen2.5:3b`, bỏ qua `qwen2.5:7b`.** Lý do: 3b (2,07 GB) chạy 100% trên GPU, còn 7b (5,06 GB) chỉ có 12/29 lớp lên GPU nên chậm gấp nhiều lần (xem 2.6). Model 7b vẫn còn cài trong Ollama (không xóa) và vẫn gọi được qua tham số `model`, nhưng không còn nằm trong kế hoạch. Ollama 0.35.1. Phần cứng: GTX 1650 4 GB VRAM, RAM 23,7 GB.
+- **Quyết định (2026-10-05): chỉ giữ MỘT model là `qwen2.5:3b`, bỏ qua `qwen2.5:7b`.** Lý do: 3b (2,07 GB) chạy 100% trên GPU, còn 7b (5,06 GB) chỉ có 12/29 lớp lên GPU nên chậm gấp nhiều lần (xem 2.6). Model 7b đã được **xóa khỏi Ollama** (`ollama rm qwen2.5:7b`, giải phóng ~4,7 GB); muốn dùng lại phải `ollama pull qwen2.5:7b`. Tham số `model` của `/solve` vẫn còn nhưng chỉ còn một model để chọn. Ollama 0.35.1. Phần cứng: GTX 1650 4 GB VRAM, RAM 23,7 GB.
 
 ---
 
@@ -47,8 +47,8 @@
   - Số hiệu văn bản trong câu hỏi (vd `244/KH-UBND`) bị loại khỏi truy vấn BM25 và chỉ dùng để **lọc đúng văn bản** (`detect_doc_hint`).
   - `expand_with_neighbor`: ghép chunk liền kề cùng mục.
 
-### 2.3. Giao diện so sánh hai model (`tests/mock_assessment_page.html`)
-- Hai bên (mặc định 3b trái, 7b phải), chạy **Lần lượt** hoặc **Song song**, nhịp Nhanh hoặc Nhịp người; có điểm số, chỉ số, phiếu trả lời 30 ô, phần đánh giá cuối và nút Tải kết quả (.json).
+### 2.3. Trang đánh giá một model (`tests/mock_assessment_page.html`)
+- Đã **đơn giản hóa từ trang so sánh hai model thành trang một model** (2026-10-05): một cột, chọn model từ `/models` (mặc định `qwen2.5:3b`), nhịp Nhanh hoặc Nhịp người; có điểm số, bốn chỉ số, phiếu trả lời 30 ô, màn hình kết quả (điểm, thời gian TB, độ tin cậy TB, danh sách câu sai, bảng từng câu) và nút Tải kết quả (.json, tên `ket-qua-model.json`). Đã bỏ chế độ Lần lượt/Song song và phần so sánh giữa hai bên.
 - **File này được sinh ra, đừng sửa trực tiếp.** Nguồn: `tests/mock_assessment_page.template.html` + 30 câu hỏi. Sau khi sửa mẫu, chạy `python tests/build_mock_page.py`.
 - Dữ liệu 30 câu = 5 câu trong `tests/test_multi_questions.py` + 25 câu trong `tests/eval_set.json`.
 - Đã bỏ Behavioral Telemetry Monitor và các selector cũ của `client/quiz_agent.user.js`. Trang mới tự chạy bằng JS nội bộ, gọi `/solve` bằng `fetch`.
@@ -59,7 +59,7 @@
 - **Đã kiểm chứng (phiên này):** bộ 30 câu với 3b ở các cấu hình khác nhau (bảng mục 4); đo phân rã thời gian bằng `timing`; chẩn đoán nguyên nhân 7b chậm (mục 2.6).
 - **Chưa kiểm chứng:**
   - Chạy trọn bộ 30 câu với 7b ở cấu hình mới: **không còn cần**, đã bỏ 7b (mới chỉ đo 6 câu đầu: 5,9–12,5 s/câu).
-  - Một lượt chạy trọn 30 câu hai bên trên trang so sánh và **màn hình đánh giá cuối** chưa được xem tận mắt. Cần kiểm tra cả bố cục màn hình hẹp và tải JSON.
+  - Trang một model: đã chạy trọn 30 câu bằng Playwright, kết quả 30/30, TB 3,2 s/câu, màn hình kết quả hiện đúng (30 dòng bảng, 0 câu sai); chỉ có lỗi 404 favicon. **Chưa kiểm tra:** bố cục màn hình hẹp, nút Tải kết quả (.json), nhịp Nhịp người. Ảnh chụp: `.playwright-mcp/single-model-results.png` (đã bị `.gitignore`).
   - Kết quả 3b có nhiễu giữa các lần chạy (cùng cấu hình `top_k=2`: 29/30 rồi 30/30; 1,1 s rồi 2,1 s/câu). Mỗi con số chỉ từ 1–2 lần chạy.
 
 ### 2.5. Tiến trình nền có thể còn chạy
@@ -100,11 +100,11 @@ backend/
     llm_runner.py           # Gọi Ollama (chế độ token/json, logprob, timing) + heuristic fallback
   data/synonyms.json
 client/
-  quiz_agent.user.js        # Userscript Tampermonkey (không còn khớp selector của trang so sánh)
+  quiz_agent.user.js        # Userscript Tampermonkey (không còn khớp selector của trang đánh giá mới)
   src/                      # config.js, pacing.js, event_dispatcher.js
 docs/                       # 1963.QD.UBND...md, 244.KH.UBND...md
 tests/
-  mock_assessment_page.template.html   # NGUỒN giao diện so sánh hai model
+  mock_assessment_page.template.html   # NGUỒN giao diện đánh giá một model
   mock_assessment_page.html            # SINH RA bởi build_mock_page.py, đừng sửa tay
   build_mock_page.py                   # Ghép mẫu + 30 câu hỏi thành trang HTML
   eval_set.json                        # 25 câu hỏi bổ sung (có đáp án chuẩn, trường doc)
@@ -155,12 +155,12 @@ Chạy: `python tests/eval_bench.py` (cần backend chạy; model chọn bằng 
 ## 5. VIỆC CẦN LÀM TIẾP
 
 1. **Sửa lỗi cache:** không lưu kết quả `source == "fallback"` vào cache (xem 2.6).
-2. **~~Xếp tầng 3b → 7b~~ (đã hủy do chỉ giữ một model).** Thay bằng: nếu muốn nhanh hơn nữa, thử cho heuristic có biên điểm rõ bỏ qua LLM, hoặc đo xem model nhỏ hơn có đủ chính xác không. Việc làm sạch còn lại cho chế độ một model (chưa làm): trang so sánh hai model và `/models` hiện vẫn giả định có hai model; có thể đơn giản hóa thành trang đánh giá một model.
+2. **~~Xếp tầng 3b → 7b~~ (đã hủy do chỉ giữ một model).** Thay bằng: nếu muốn nhanh hơn nữa, thử cho heuristic có biên điểm rõ bỏ qua LLM, hoặc đo xem model nhỏ hơn có đủ chính xác không. Trang đánh giá đã được đơn giản hóa thành một model (xem 2.3).
 3. **Kiểm chứng giao diện đầy đủ:** chạy trọn một lượt ở chế độ Lần lượt, xem màn hình đánh giá cuối, thử màn hình hẹp, thử Tải kết quả (.json), thử chế độ Nhịp người. Cân nhắc hiển thị trường `timing` trên trang. Sửa mẫu rồi chạy `build_mock_page.py`.
 4. **Mở rộng chế độ một token cho yes/no và score** (phương án đã đề xuất, chưa làm): yes/no dùng hai token `Đúng`/`Sai`, score dùng các token chữ số `1–5` và tính điểm kỳ vọng ∑ k·P(k); thêm trường `type` vào `/solve`.
 5. **Cải thiện độ chính xác nếu cần:** hybrid retrieval (embedding như `bge-m3`) + reranker, lọc văn bản theo tên đơn vị ("xã Đại Lộc"), mở rộng bộ đánh giá bằng câu hỏi diễn đạt khác từ khóa, thử Qwen3-8B. Việc giảm số đoạn ngữ cảnh làm chất lượng xếp hạng chunk quan trọng hơn.
 6. **Quyết định còn mở:** có khôi phục Telemetry Monitor và khả năng chạy bằng userscript trên một trang riêng hay không.
-7. **Bảo mật cơ bản:** thông báo review sau commit nêu rủi ro cạn tài nguyên và gọi chéo nguồn ở `backend/main.py` nhưng không có chi tiết. Đã thêm giới hạn kích thước đầu vào cho `/solve`. CORS vẫn là `allow_origins=["*"]` (trang so sánh mở bằng `file://` cần nó); server chỉ nghe trên `127.0.0.1`. Nếu mở ra ngoài máy cục bộ thì phải siết lại.
+7. **Bảo mật cơ bản:** thông báo review sau commit nêu rủi ro cạn tài nguyên và gọi chéo nguồn ở `backend/main.py` nhưng không có chi tiết. Đã thêm giới hạn kích thước đầu vào cho `/solve`. CORS vẫn là `allow_origins=["*"]` (trang đánh giá mở bằng `file://` cần nó); server chỉ nghe trên `127.0.0.1`. Nếu mở ra ngoài máy cục bộ thì phải siết lại.
 8. Khi thêm tài liệu vào `docs/`: gọi `POST /reload-docs`; chunk header/chữ ký được sinh tự động cho mọi file `.md`/`.txt`.
 
 ---
@@ -170,7 +170,7 @@ Chạy: `python tests/eval_bench.py` (cần backend chạy; model chọn bằng 
 - **Không dùng `python - <<EOF` (heredoc) để sửa file có dấu gạch chéo ngược, dấu nháy ba hoặc xuống dòng.** Trong môi trường này `\n`, `\b`, `\d` trong chuỗi bị biến dạng, và heredoc có `'''` làm lỗi cú pháp shell. Hãy dùng công cụ Edit/Write. `sed` cũng làm mất dấu gạch chéo ngược.
 - `backend/main.py` lẫn kết thúc dòng CRLF và LF, `backend/config.py` dùng CRLF. Python vẫn chạy bình thường; công cụ Edit khớp được.
 - Console Windows dùng cp1252: chạy script in tiếng Việt với `PYTHONIOENCODING=utf-8`. `curl` với dữ liệu tiếng Việt qua shell có thể báo lỗi body; dùng Python `requests`.
-- **Ollama trên máy này:** không bật `OLLAMA_FLASH_ATTENTION` / `OLLAMA_KV_CACHE_TYPE` khi dùng 7b (xem 2.6). Chạy song song hai model làm mỗi câu mất ~30 s vì VRAM không đủ; giữ chế độ Lần lượt.
+- **Ollama trên máy này:** không bật `OLLAMA_FLASH_ATTENTION` / `OLLAMA_KV_CACHE_TYPE` nếu sau này dùng lại 7b (xem 2.6); với 3b hai biến này không có tác dụng. Đừng chạy hai model cùng lúc vì VRAM 4 GB không đủ.
 - Phân biệt "7b chậm" với "7b treo": nếu `timing` rỗng và `inference_ms` ≈ `LLM_TIMEOUT_SECONDS` thì LLM không trả lời và kết quả là heuristic.
 - Playwright MCP chỉ lưu ảnh trong thư mục dự án. `browser_wait_for` với `text` bị timeout 5 s, nên dùng `time` hoặc đọc trạng thái bằng `browser_evaluate`.
 - Dừng backend trên Windows: `Get-NetTCPConnection -LocalPort 8000 -State Listen | % { Stop-Process -Id $_.OwningProcess -Force }` (PowerShell). Trong PowerShell, `Remove-Item Env:...` có thể bị chặn; đặt `$env:VAR = $null` để xóa biến môi trường.

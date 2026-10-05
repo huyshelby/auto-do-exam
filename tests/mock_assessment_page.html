@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hai model, một đề thi CCHC</title>
+<title>Đề thi CCHC, một model cục bộ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
@@ -56,8 +56,8 @@ button, select { font: inherit; color: inherit; }
 .banner[hidden] { display: none; }
 
 /* ---------- Arena ---------- */
-.arena { display: grid; grid-template-columns: 1fr 1fr; margin-top: 24px; }
-.side { --side: var(--a); --side-soft: var(--a-soft); padding: 0 28px 0 0; min-width: 0; }
+.arena { display: grid; grid-template-columns: minmax(0, 820px); margin-top: 24px; }
+.side { --side: var(--a); --side-soft: var(--a-soft); padding: 0; min-width: 0; }
 .side[data-side="b"] { --side: var(--b); --side-soft: var(--b-soft); padding: 0 0 0 28px; border-left: 2px solid var(--ink); }
 
 .s-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
@@ -172,14 +172,10 @@ tr:last-child td { border-bottom: 0; }
 <div class="page">
   <header class="top">
     <div>
-      <h1>Hai model, cùng một đề thi CCHC</h1>
-      <p>30 câu trắc nghiệm trích từ Quyết định 1963/QĐ-UBND và Kế hoạch 244/KH-UBND. Mỗi bên là một model chạy cục bộ trên Ollama, tự tra tài liệu và điền phiếu trả lời.</p>
+      <h1>Đề thi CCHC, một model cục bộ</h1>
+      <p>30 câu trắc nghiệm trích từ Quyết định 1963/QĐ-UBND và Kế hoạch 244/KH-UBND. Model chạy cục bộ trên Ollama, tự tra tài liệu và điền phiếu trả lời.</p>
     </div>
     <div class="controls">
-      <div class="seg" role="radiogroup" aria-label="Cách chạy">
-        <label><input type="radio" name="mode" value="sequential" checked><span>Lần lượt</span></label>
-        <label><input type="radio" name="mode" value="parallel"><span>Song song</span></label>
-      </div>
       <div class="seg" role="radiogroup" aria-label="Nhịp trả lời">
         <label><input type="radio" name="pace" value="fast" checked><span>Nhanh</span></label>
         <label><input type="radio" name="pace" value="human"><span>Nhịp người (3–6 s/câu)</span></label>
@@ -190,7 +186,6 @@ tr:last-child td { border-bottom: 0; }
     </div>
   </header>
 
-  <p class="modehint">Lần lượt chạy bên trái xong rồi mới chạy bên phải, nên thời gian đo được chính xác. Song song cho cả hai chạy cùng lúc nhưng sẽ chậm nếu hai model không vừa bộ nhớ GPU.</p>
   <div class="banner" id="banner" hidden></div>
 
   <main class="arena" id="arena"></main>
@@ -931,18 +926,16 @@ const fmtPct = x => (x * 100).toLocaleString('vi-VN', { maximumFractionDigits: 0
 
 const sides = {
   a: { id: 'a', name: '', res: Array(N).fill(null), cur: -1, view: null, running: false, done: false, t0: 0, t1: 0 },
-  b: { id: 'b', name: '', res: Array(N).fill(null), cur: -1, view: null, running: false, done: false, t0: 0, t1: 0 },
 };
 let runId = 0, busy = false, models = [];
 
 /* ---------- Layout ---------- */
 function shell(id) {
-  const left = id === 'a';
   return `
-  <section class="side" data-side="${id}" aria-label="Model ${left ? 'bên trái' : 'bên phải'}">
+  <section class="side" data-side="${id}" aria-label="Model">
     <div class="s-head">
       <div>
-        <label for="model-${id}">Model ${left ? 'bên trái' : 'bên phải'}</label>
+        <label for="model-${id}">Model</label>
         <select id="model-${id}"></select>
       </div>
       <div class="score" aria-live="polite"><span class="n" id="score-${id}">0</span><span class="of">/ ${N}</span></div>
@@ -971,7 +964,7 @@ function renderCard(s) {
   const el = $('#card-' + s.id);
   const i = s.view ?? (s.cur >= 0 ? s.cur : null);
   if (i === null) {
-    el.innerHTML = `<p class="empty">Chọn model cho mỗi bên rồi bấm <b>Bắt đầu</b>. Câu hỏi sẽ hiện ở đây khi model đọc đến.</p>`;
+    el.innerHTML = `<p class="empty">Bấm <b>Bắt đầu</b>. Câu hỏi sẽ hiện ở đây khi model đọc đến.</p>`;
     return;
   }
   const q = QUIZ[i], r = s.res[i];
@@ -1060,7 +1053,6 @@ async function runSide(s, token, pace) {
 
 async function start() {
   if (busy) return;
-  const mode = document.querySelector('input[name=mode]:checked').value;
   const pace = document.querySelector('input[name=pace]:checked').value;
   const alive = await checkServer();
   if (!alive) return;
@@ -1074,16 +1066,14 @@ async function start() {
   const token = ++runId;
   // Nạp sẵn model vào bộ nhớ để lần đầu nạp model không bị tính vào thời gian trả lời
   $('#startBtn').textContent = 'Đang nạp model…';
-  const names = [...new Set([sides.a.name, sides.b.name])];
-  await Promise.all(names.map(n => ask(QUIZ[0], n).catch(() => null)));
-  try { await fetch(API + '/reload-docs', { method: 'POST' }); } catch (e) { /* xóa cache để đo công bằng */ }
+  await ask(QUIZ[0], sides.a.name).catch(() => null);
+  try { await fetch(API + '/reload-docs', { method: 'POST' }); } catch (e) { /* xóa cache để thời gian đo không dính cache */ }
   if (token !== runId) return;
   $('#startBtn').textContent = 'Đang chạy…';
-  if (mode === 'parallel') await Promise.all([runSide(sides.a, token, pace), runSide(sides.b, token, pace)]);
-  else { await runSide(sides.a, token, pace); await runSide(sides.b, token, pace); }
+  await runSide(sides.a, token, pace);
   if (token !== runId) return;
   setBusy(false);
-  showResults(mode, pace);
+  showResults(pace);
 }
 
 function reset() {
@@ -1116,68 +1106,41 @@ function summarize(s) {
   };
 }
 
-function showResults(mode, pace) {
-  const A = summarize(sides.a), B = summarize(sides.b);
-  let verdict, sub;
-  const fast = (x, y) => (y.avgMs / Math.max(x.avgMs, 1)).toLocaleString('vi-VN', { maximumFractionDigits: 1 });
-  if (A.correct !== B.correct) {
-    const w = A.correct > B.correct ? A : B, l = w === A ? B : A;
-    verdict = `${w.name} chính xác hơn: ${w.correct}/${N} so với ${l.correct}/${N}`;
-    sub = w.avgMs > l.avgMs ? `Đổi lại, ${l.name} nhanh hơn khoảng ${fast(l, w)} lần mỗi câu.` : `${w.name} cũng nhanh hơn khoảng ${fast(w, l)} lần mỗi câu.`;
-  } else {
-    const w = A.avgMs <= B.avgMs ? A : B, l = w === A ? B : A;
-    verdict = `Hòa về độ chính xác: cùng đúng ${A.correct}/${N} câu`;
-    sub = `${w.name} nhanh hơn khoảng ${fast(w, l)} lần mỗi câu (${fmtMs(w.avgMs)} so với ${fmtMs(l.avgMs)}).`;
-  }
-  const metrics = [
-    { label: 'Câu trả lời đúng', a: A.correct, b: B.correct, fmt: v => `${v}/${N}`, max: N, better: 'high' },
-    { label: 'Thời gian trung bình mỗi câu', a: A.avgMs, b: B.avgMs, fmt: fmtMs, max: Math.max(A.avgMs, B.avgMs, 1), better: 'low' },
-    { label: 'Tổng thời gian chạy', a: A.totalMs, b: B.totalMs, fmt: v => fmtMs(v), max: Math.max(A.totalMs, B.totalMs, 1), better: 'low' },
-    { label: 'Độ tin cậy trung bình', a: A.conf, b: B.conf, fmt: fmtPct, max: 1, better: 'high' },
-    { label: 'Câu phải dùng heuristic', a: A.fallback, b: B.fallback, fmt: v => v, max: Math.max(A.fallback, B.fallback, 1), better: 'low' },
-  ];
-  const row = (side, v, m, best) =>
-    `<div class="mrow ${side}${best ? ' best' : ''}"><div class="track"><div class="fill" style="width:${Math.max(2, v / m.max * 100)}%"></div></div><span class="val">${m.fmt(v)}</span></div>`;
-  const metricsHtml = metrics.map(m => {
-    const tie = m.a === m.b;
-    const aBest = !tie && (m.better === 'high' ? m.a > m.b : m.a < m.b);
-    const bBest = !tie && !aBest;
-    return `<div class="metric"><h3>${m.label}</h3><div class="rows">${row('a', m.a, m, aBest)}${row('b', m.b, m, bBest)}</div></div>`;
-  }).join('');
+function showResults(pace) {
+  const A = summarize(sides.a);
+  const verdict = `${A.name} trả lời đúng ${A.correct}/${N} câu (${fmtPct(A.correct / N)})`;
+  const sub = `Thời gian trung bình ${fmtMs(A.avgMs)} mỗi câu, độ tin cậy trung bình ${fmtPct(A.conf)}.`
+    + (A.fallback ? ` ${A.fallback} câu phải dùng heuristic vì model không trả lời.` : '')
+    + (A.errors ? ` ${A.errors} câu bị lỗi gọi server.` : '');
 
-  const chip = (r, q) => !r ? `<span class="chip">chưa có</span>` : r.err ? `<span class="chip bad">lỗi</span>` :
-    `<span class="chip ${r.correct ? 'ok' : 'bad'}">${r.key} ${r.correct ? '✓' : '✗'}</span>`;
-  const diffs = QUIZ.map((q, i) => ({ q, i, ra: sides.a.res[i], rb: sides.b.res[i] }))
-    .filter(x => (x.ra && x.ra.key) !== (x.rb && x.rb.key) || (x.ra && !x.ra.correct));
-  const diffHtml = diffs.length ? diffs.map(x => `
+  const wrong = QUIZ.map((q, i) => ({ q, i, r: sides.a.res[i] })).filter(x => x.r && (x.r.err || !x.r.correct));
+  const wrongHtml = wrong.length ? wrong.map(x => `
     <div class="diff"><p>Câu ${x.i + 1}. ${esc(x.q.question)}</p>
       <div class="chips"><span class="chip">Đáp án đúng: ${x.q.expected}</span>
-      <span>${esc(A.name)}</span>${chip(x.ra, x.q)}<span>${esc(B.name)}</span>${chip(x.rb, x.q)}</div></div>`).join('')
-    : `<p class="note">Cả hai model đều đúng ở mọi câu.</p>`;
+      <span>${esc(A.name)}</span>${x.r.err ? '<span class="chip bad">lỗi</span>' : `<span class="chip bad">${x.r.key} ✗</span><span>tin cậy ${fmtPct(x.r.conf)}</span>`}</div></div>`).join('')
+    : `<p class="note">Model đúng ở mọi câu.</p>`;
 
-  const cell = (r, q) => !r ? '<td class="c">–</td>' : r.err ? '<td class="c err">!</td>' : `<td class="c ${r.correct ? 'ok' : 'bad'}">${r.key}</td>`;
-  const tableHtml = QUIZ.map((q, i) => `<tr><td>${i + 1}</td><td>${esc(q.question)}</td><td class="c">${q.expected}</td>${cell(sides.a.res[i], q)}${cell(sides.b.res[i], q)}</tr>`).join('');
+  const cell = r => !r ? '<td class="c">–</td>' : r.err ? '<td class="c err">!</td>' : `<td class="c ${r.correct ? 'ok' : 'bad'}">${r.key}</td>`;
+  const tableHtml = QUIZ.map((q, i) => `<tr><td>${i + 1}</td><td>${esc(q.question)}</td><td class="c">${q.expected}</td>${cell(sides.a.res[i])}</tr>`).join('');
 
   const el = $('#results');
   el.hidden = false;
   el.innerHTML = `
     <h2>${esc(verdict)}</h2>
     <p class="sub">${esc(sub)}</p>
-    <div class="legend"><span style="color:var(--a)"><i style="background:var(--a)"></i>${esc(A.name)}</span><span style="color:var(--b)"><i style="background:var(--b)"></i>${esc(B.name)}</span></div>
-    <div class="metrics">${metricsHtml}</div>
-    <div class="block"><h3>Những câu hai model khác nhau hoặc sai</h3>
-      <p class="note">Mỗi dòng cho biết đáp án đúng và lựa chọn của từng model.</p>
-      <div class="diffs">${diffHtml}</div></div>
+    <div class="block"><h3>Những câu model trả lời sai</h3>
+      <p class="note">Mỗi dòng cho biết đáp án đúng và lựa chọn của model.</p>
+      <div class="diffs">${wrongHtml}</div></div>
     <div class="block"><h3>Bảng từng câu</h3>
-      <div class="tablewrap"><table><thead><tr><th>Câu</th><th>Nội dung</th><th>Đúng</th><th style="color:var(--a)">${esc(A.name)}</th><th style="color:var(--b)">${esc(B.name)}</th></tr></thead><tbody>${tableHtml}</tbody></table></div></div>
+      <div class="tablewrap"><table><thead><tr><th>Câu</th><th>Nội dung</th><th>Đúng</th><th style="color:var(--a)">${esc(A.name)}</th></tr></thead><tbody>${tableHtml}</tbody></table></div></div>
     <div class="actions"><button class="btn" id="againBtn" type="button">Chạy lại</button><button class="btn ghost" id="dlBtn" type="button">Tải kết quả (.json)</button></div>
-    <p class="foot">Thời gian là thời gian chờ phía trình duyệt cho mỗi câu, gồm truy xuất tài liệu và suy luận.${mode === 'parallel' ? ' Ở chế độ song song hai model dùng chung máy nên thời gian của cả hai đều chậm hơn khi chạy riêng. Chọn "Lần lượt" để so sánh tốc độ công bằng hơn.' : ''} Bộ 30 câu do nhóm tự soạn từ hai văn bản trong thư mục docs/, nên điểm số chỉ phản ánh bộ đề này.</p>`;
+    <p class="foot">Thời gian là thời gian chờ phía trình duyệt cho mỗi câu, gồm truy xuất tài liệu và suy luận. Bộ 30 câu do nhóm tự soạn từ hai văn bản trong thư mục docs/, nên điểm số chỉ phản ánh bộ đề này.</p>`;
   $('#againBtn').onclick = () => { window.scrollTo({ top: 0, behavior: 'smooth' }); start(); };
   $('#dlBtn').onclick = () => {
-    const out = { when: new Date().toISOString(), mode, pace, summary: { a: A, b: B },
-      questions: QUIZ.map((q, i) => ({ id: q.id, expected: q.expected, a: sides.a.res[i], b: sides.b.res[i] })) };
+    const out = { when: new Date().toISOString(), pace, summary: A,
+      questions: QUIZ.map((q, i) => ({ id: q.id, expected: q.expected, result: sides.a.res[i] })) };
     const url = URL.createObjectURL(new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' }));
-    const a = document.createElement('a'); a.href = url; a.download = 'ket-qua-so-sanh-model.json'; a.click(); URL.revokeObjectURL(url);
+    const a = document.createElement('a'); a.href = url; a.download = 'ket-qua-model.json'; a.click(); URL.revokeObjectURL(url);
   };
   el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -1190,13 +1153,9 @@ async function checkServer() {
     models = m.models.length ? m.models : [m.default];
     status.className = 'status on'; status.textContent = `Server sẵn sàng · ${models.length} model`;
     banner.hidden = true;
-    for (const id of ['a', 'b']) {
-      const sel = $('#model-' + id), keep = sel.value;
-      sel.innerHTML = models.map(n => `<option>${esc(n)}</option>`).join('');
-      const pick = keep && models.includes(keep) ? keep
-        : (id === 'a' ? models.find(n => /3b/.test(n)) : models.find(n => /7b/.test(n))) || models[id === 'a' ? 0 : models.length - 1];
-      sel.value = pick;
-    }
+    const sel = $('#model-a'), keep = sel.value;
+    sel.innerHTML = models.map(n => `<option>${esc(n)}</option>`).join('');
+    sel.value = keep && models.includes(keep) ? keep : (models.includes(m.default) ? m.default : models[0]);
     return true;
   } catch (e) {
     status.className = 'status off'; status.textContent = 'Không kết nối được server';
@@ -1206,8 +1165,8 @@ async function checkServer() {
   }
 }
 
-$('#arena').innerHTML = shell('a') + shell('b');
-buildSheet('a'); buildSheet('b');
+$('#arena').innerHTML = shell('a');
+buildSheet('a');
 for (const s of Object.values(sides)) paint(s);
 $('#arena').addEventListener('click', e => {
   const c = e.target.closest('.cell'); if (!c) return;
